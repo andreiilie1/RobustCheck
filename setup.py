@@ -4,6 +4,7 @@ requirements = [
     "matplotlib >= 3.7.0",
     "numpy >= 1.24.2",
     "mlflow >= 1.2.0",
+    "tqdm >= 4.64.1",
 ]
 
 setup(

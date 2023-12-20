@@ -1,5 +1,8 @@
+import numpy as np
+
 from robustcheck import config
-from robustcheck.utils import get_evoba_stats, print_evoba_stats
+from tqdm import tqdm
+from robustcheck.utils.metrics import image_distance
 from robustcheck.types.AttackType import AttackType
 
 
@@ -9,19 +12,148 @@ class RobustnessCheck:
         self.x_test = x_test
         self.y_test = y_test
 
-        self.attack = attack
-        self.attack_params = attack_params
+        if len(self.x_test) != len(self.y_test):
+            raise Exception(f"Lengths of x_test and y_test do not match: {len(self.x_test)} vs {len(self.y_test)}")
+
+        self._dataset_size = len(x_test)
 
         if attack not in config.SUPPORTED_ATTACKS:
             raise Exception(f"{attack} is not one of the supported backend types: {config.SUPPORTED_ATTACKS}")
 
+        self.attack = attack
+        self.attack_params = attack_params
+
         # TODO: check if attack_params are the ones corresponding to the attack. Map these in robustcheck.config
 
-    def run_robustness_check(self):
-        AttackClass = config.SUPPORTED_ATTACKS[self.attack]
+        print("Running accuracy evaluation")
 
-        attack_instance = AttackClass(self.model, self.x_test[0], self.y_test[0], **self.attack_params)
-        count_queries = attack_instance.run_adversarial_attack(100)
-        print(count_queries)
-        stats = get_evoba_stats({0: attack_instance})
-        print_evoba_stats(stats)
+        proba_outputs = self.model.predict(x_test)
+        self._y_pred = np.argmax(proba_outputs, axis=1)
+
+        self._correct_pred_mask = (self._y_pred == self.y_test)
+        self._accuracy = np.mean(self._correct_pred_mask)
+
+        print("Accuracy: ", self._accuracy)
+
+        self._index_to_adversarial_strategy = {}
+        self._stats = {}
+
+    def run_robustness_check(self):
+        attack_class = config.SUPPORTED_ATTACKS[self.attack]
+        index_to_adversarial_strategy = {}
+
+        for index in tqdm(range(self._dataset_size)):
+            if self._correct_pred_mask[index]:
+                img = self.x_test[index]
+                label = self.y_test[index]
+                index_to_adversarial_strategy[index] = attack_class(
+                    model=self.model,
+                    img=img,
+                    label=label,
+                    **self.attack_params,
+                )
+
+                no_steps = index_to_adversarial_strategy[index].run_adversarial_attack()
+
+                assert no_steps > 0  # This should hold as any correctly classified image requires at least one query
+
+        self._index_to_adversarial_strategy = index_to_adversarial_strategy
+        stats = self._compute_robustness_stats()
+
+        self._stats = stats
+
+        return stats
+
+    def _compute_robustness_stats(self):
+        if self._index_to_adversarial_strategy == {}:
+            raise Exception("There is no adversarial strategy dictionary compute as part of this instance")
+
+        successful_perturbation_count = 0
+        successful_perturbation_queries = []
+        successful_perturbation_l0_distances = []
+        successful_perturbation_l2_distances = []
+        successful_perturbation_indices = []
+
+        failed_perturbation_count = 0
+        failed_perturbation_indices = []
+
+        adv_evo_strategy_keys = list(self._index_to_adversarial_strategy.keys())
+
+        for i in adv_evo_strategy_keys:
+            img = self._index_to_adversarial_strategy[i].img
+
+            if self._index_to_adversarial_strategy[i].is_perturbed():
+                successful_perturbation_count += 1
+                successful_perturbation_queries.append(self._index_to_adversarial_strategy[i].queries)
+
+                curr_l0 = image_distance(
+                    self._index_to_adversarial_strategy[i].get_best_candidate(), img, norm="L0"
+                )
+                successful_perturbation_l0_distances.append(curr_l0)
+
+                curr_l2 = image_distance(
+                    self._index_to_adversarial_strategy[i].get_best_candidate(), img, norm="L2"
+                )
+                successful_perturbation_l2_distances.append(curr_l2)
+
+                successful_perturbation_indices.append(i)
+            else:
+                failed_perturbation_count += 1
+                failed_perturbation_indices.append(i)
+
+        img_shape = np.shape(self._index_to_adversarial_strategy[adv_evo_strategy_keys[0]].img)
+        count_px = img_shape[0] * img_shape[1] * img_shape[2]
+
+        # Will report l2 distances on [0,1] pixel scale, as this is usual in the literature
+        # e.g. ImageNet is on [0,255]. Note l0 doesn't need to be normalised, as it's a count
+        img_scale = self._index_to_adversarial_strategy[adv_evo_strategy_keys[0]].pixel_space_max
+
+        return {
+            "count_succ": int(successful_perturbation_count),
+            "queries_succ": successful_perturbation_queries,
+            "l0_dists_succ": successful_perturbation_l0_distances,
+            "l2_dists_succ": successful_perturbation_l2_distances,
+            "indices_succ": successful_perturbation_indices,
+            "count_fail": int(failed_perturbation_count),
+            "indices_fail": failed_perturbation_indices,
+            "queries_succ_mean": np.mean(successful_perturbation_queries),
+            "l0_dists_succ_mean": np.mean(successful_perturbation_l0_distances),
+            "l2_dists_succ_mean": np.mean(successful_perturbation_l2_distances) / img_scale,
+            "l2_dists_succ_mean_pp": np.mean(successful_perturbation_l2_distances) / (count_px * img_scale),
+        }
+
+    def print_robustness_stats(self):
+        if self._stats == {}:
+            raise Exception("No stats have been computed as part of this instance")
+
+        SEP = "_" * 20
+        count_succ = self._stats["count_succ"]
+        count_fail = self._stats["count_fail"]
+        count_total = count_succ + count_fail
+
+        queries_succ_mean = self._stats["queries_succ_mean"]
+        l0_dists_succ_mean = self._stats["l0_dists_succ_mean"]
+
+        queries_succ = self._stats["queries_succ"]
+        l0_dists_succ = self._stats["l0_dists_succ"]
+
+        l2_dists_succ_mean_pp = self._stats["l2_dists_succ_mean_pp"]
+
+        print()
+        print("EvoBA STATS (L0 attack)")
+        print(SEP)
+
+        print(f"Perturbed successfully {count_succ}/{count_total} images")
+        print(f"Average query count: {queries_succ_mean}")
+        print(f"Average l0 distance: {l0_dists_succ_mean}")
+        print(f"Average l2 distance per pixel: {l2_dists_succ_mean_pp}")
+
+        print()
+        print(f"Median query count: {np.median(queries_succ)}")
+        print(f"Median l0 dist: {np.median(l0_dists_succ)}")
+
+        print()
+        print(f"Max query count: {max(queries_succ)}")
+        print(f"Max l0 dist: {max(l0_dists_succ)}")
+        print(SEP)
+        print()
