@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from robustcheck.types.EvoStrategy import EvoStrategy
 from robustcheck.types.UntargetedAttack import UntargetedAttack
 from robustcheck import utils
+import gc
 
 
 class EvoStrategyUniformUntargeted(EvoStrategy, UntargetedAttack):
@@ -63,6 +64,7 @@ class EvoStrategyUniformUntargeted(EvoStrategy, UntargetedAttack):
         pixel_space_int_flag=False,
         pixel_space_min=0.0,
         pixel_space_max=1.0,
+        clean_memory=True
     ):
         EvoStrategy.__init__(self)
 
@@ -89,6 +91,8 @@ class EvoStrategyUniformUntargeted(EvoStrategy, UntargetedAttack):
         self.pixel_space_int_flag = pixel_space_int_flag
         self.pixel_space_min = pixel_space_min
         self.pixel_space_max = pixel_space_max
+
+        self.clean_memory = clean_memory
 
         if self.verbose:
             self.print_initial_state()
@@ -174,19 +178,26 @@ class EvoStrategyUniformUntargeted(EvoStrategy, UntargetedAttack):
             self._generate_next_generation()
             generation_idx += 1
 
+        best_candidate = np.copy(self.get_best_candidate())
+
+        if self.clean_memory:
+            del self.active_generation
+            self.active_generation = [best_candidate]
+            self.fitness_scores = [np.max(self.fitness_scores)]
+            gc.collect()
+
         if self.is_perturbed() and generation_idx > 0:
+            model_pred_best_candidate = self.model.predict(
+                np.expand_dims(best_candidate, axis=0),
+                verbose=False,
+            )
             if self.verbose:
                 print("After", generation_idx, "generations")
                 print(
                     "Label:",
                     self.label,
                     "; Prediction:",
-                    np.argmax(
-                        self.model.predict(
-                            np.expand_dims(self.get_best_candidate(), axis=0),
-                            verbose=False,
-                        )
-                    ),
+                    np.argmax(model_pred_best_candidate),
                 )
                 print("Fitness:", max(self.fitness_scores))
                 try:
@@ -199,10 +210,10 @@ class EvoStrategyUniformUntargeted(EvoStrategy, UntargetedAttack):
                     plt.subplot(122)
                     if self.reshape_flag:
                         plt.imshow(
-                            np.reshape(self.get_best_candidate(), self.reshape_dims)
+                            np.reshape(best_candidate, self.reshape_dims)
                         )
                     else:
-                        plt.imshow(self.get_best_candidate())
+                        plt.imshow(best_candidate)
 
                     plt.show()
                 except Exception as e:
@@ -214,22 +225,16 @@ class EvoStrategyUniformUntargeted(EvoStrategy, UntargetedAttack):
         if self.verbose:
             print(
                 "Final probability to be classified correctly:",
-                self.model.predict(
-                    np.expand_dims(self.get_best_candidate(), axis=0), verbose=False
-                )[0][self.label],
+                model_pred_best_candidate[0][self.label],
             )
             print(
                 "Final probability to be classified as:",
                 np.argmax(
-                    self.model.predict(
-                        np.expand_dims(self.get_best_candidate(), axis=0), verbose=False
-                    )[0]
+                    model_pred_best_candidate[0]
                 ),
                 " is ",
                 np.max(
-                    self.model.predict(
-                        np.expand_dims(self.get_best_candidate(), axis=0)
-                    )[0]
+                    model_pred_best_candidate[0]
                 ),
             )
             print("Queries: ", self.queries)
