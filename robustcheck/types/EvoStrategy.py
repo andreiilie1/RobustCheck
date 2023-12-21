@@ -51,8 +51,8 @@ class EvoStrategy(ABC):
     def _generate_next_generation(self):
         """Retrieves next generation starting from the active one and sets it to active."""
         new_generation = self._get_next_generation()
+        del self.active_generation
         self.active_generation = new_generation
         self.generation_count += 1
         self.fitness_scores, queries = self._get_fitness_scores()
         self.queries += queries
-
