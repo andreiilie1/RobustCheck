@@ -56,7 +56,7 @@ class RobustnessCheck:
                 no_steps = index_to_adversarial_strategy[index].run_adversarial_attack()
 
                 assert no_steps > 0  # This should hold as any correctly classified image requires at least one query
-
+            
         self._index_to_adversarial_strategy = index_to_adversarial_strategy
         stats = self._compute_robustness_stats()
 
