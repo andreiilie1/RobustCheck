@@ -186,43 +186,42 @@ class EvoStrategyUniformUntargeted(EvoStrategy, UntargetedAttack):
             self.fitness_scores = [np.max(self.fitness_scores)]
             gc.collect()
 
-        if self.is_perturbed() and generation_idx > 0:
+        if self.verbose:
             model_pred_best_candidate = self.model.predict(
                 np.expand_dims(best_candidate, axis=0),
                 verbose=False,
             )
-            if self.verbose:
-                print("After", generation_idx, "generations")
-                print(
-                    "Label:",
-                    self.label,
-                    "; Prediction:",
-                    np.argmax(model_pred_best_candidate),
-                )
-                print("Fitness:", max(self.fitness_scores))
-                try:
-                    plt.subplot(121)
-                    if self.reshape_flag:
-                        plt.imshow(np.reshape(self.img, self.reshape_dims))
-                    else:
-                        plt.imshow(self.img)
+            print("After", generation_idx, "generations")
+            print(
+                "Label:",
+                self.label,
+                "; Prediction:",
+                np.argmax(model_pred_best_candidate),
+            )
+            print("Fitness:", max(self.fitness_scores))
+            try:
+                plt.subplot(121)
+                if self.reshape_flag:
+                    plt.imshow(np.reshape(self.img, self.reshape_dims) / self.pixel_space_max)
+                else:
+                    plt.imshow(self.img / self.pixel_space_max)
 
-                    plt.subplot(122)
-                    if self.reshape_flag:
-                        plt.imshow(
-                            np.reshape(best_candidate, self.reshape_dims)
-                        )
-                    else:
-                        plt.imshow(best_candidate)
+                plt.subplot(122)
+                if self.reshape_flag:
+                    plt.imshow(
+                        np.reshape(best_candidate, self.reshape_dims) / self.pixel_space_max
+                    )
+                else:
+                    plt.imshow(best_candidate / self.pixel_space_max)
 
-                    plt.show()
-                except Exception as e:
-                    if self.verbose:
-                        print("error displaying")
-                        print(e)
+                plt.show()
+            except Exception as e:
                 if self.verbose:
-                    print()
-        if self.verbose:
+                    print("error displaying")
+                    print(e)
+
+            print()
+
             print(
                 "Final probability to be classified correctly:",
                 model_pred_best_candidate[0][self.label],
@@ -240,4 +239,5 @@ class EvoStrategyUniformUntargeted(EvoStrategy, UntargetedAttack):
             print("Queries: ", self.queries)
             print("_________________________")
             print()
+
         return generation_idx
