@@ -23,6 +23,10 @@ class RobustnessCheck:
         self.attack = attack
         self.attack_params = attack_params
 
+        for attack_param_key in config.DEFAULT_PARAMS[attack]:
+            if attack_param_key not in self.attack_params:
+                self.attack_params[attack_param_key] = config.DEFAULT_PARAMS[attack][attack_param_key]
+
         # TODO: check if attack_params are the ones corresponding to the attack. Map these in robustcheck.config
 
         print("Running accuracy evaluation")
@@ -56,7 +60,7 @@ class RobustnessCheck:
                 no_steps = index_to_adversarial_strategy[index].run_adversarial_attack()
 
                 assert no_steps > 0  # This should hold as any correctly classified image requires at least one query
-            
+
         self._index_to_adversarial_strategy = index_to_adversarial_strategy
         stats = self._compute_robustness_stats()
 

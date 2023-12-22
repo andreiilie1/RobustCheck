@@ -58,13 +58,14 @@ class EvoStrategyUniformUntargeted(EvoStrategy, UntargetedAttack):
         label,
         generation_size,
         one_step_perturbation_pixel_count,
-        verbose,
+        steps=100,
+        verbose=False,
         reshape_flag=False,
         reshape_dims=(28, 28),
         pixel_space_int_flag=False,
         pixel_space_min=0.0,
         pixel_space_max=1.0,
-        clean_memory=True
+        clean_memory=True,
     ):
         EvoStrategy.__init__(self)
 
@@ -82,6 +83,7 @@ class EvoStrategyUniformUntargeted(EvoStrategy, UntargetedAttack):
 
         self.generation_size = generation_size
         self.one_step_perturbation_pixel_count = one_step_perturbation_pixel_count
+        self.steps = steps
 
         self.verbose = verbose
 
@@ -171,10 +173,10 @@ class EvoStrategyUniformUntargeted(EvoStrategy, UntargetedAttack):
             return True
         return False
 
-    def run_adversarial_attack(self, steps=100):
+    def run_adversarial_attack(self):
         generation_idx = 0
 
-        while generation_idx < steps and not self.is_perturbed():
+        while generation_idx < self.steps and not self.is_perturbed():
             self._generate_next_generation()
             generation_idx += 1
 

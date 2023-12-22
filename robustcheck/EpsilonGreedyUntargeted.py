@@ -34,7 +34,7 @@ class EpsilonGreedyUntargeted(UntargetedAttack):
             successful adversarial perturbation was found or until steps generations were explored. Returns the total
             number of generations before the stopping condition was reached.
     """
-    def __init__(self, model, img, label, pixel_groups, epsilon=0.1, pixel_space_max=1.0, verbose=False):
+    def __init__(self, model, img, label, pixel_groups, epsilon=0.1, pixel_space_max=1.0, steps=1000, verbose=False):
         UntargetedAttack.__init__(self, model, img, label)  # Each instance encapsulates the model and image to perturb
 
         self._perturbed_img = np.copy(img)  # self._perturbed_img is the variable we will iteratively perturb
@@ -46,8 +46,8 @@ class EpsilonGreedyUntargeted(UntargetedAttack):
 
         assert 0 <= epsilon <= 1  # epsilon is a probability (of exploration), needs to be between 0 and 1
         self.epsilon = epsilon
-
         self.pixel_space_max = pixel_space_max
+        self.steps = steps
 
         self.verbose = verbose
 
@@ -140,9 +140,9 @@ class EpsilonGreedyUntargeted(UntargetedAttack):
             "pred_after": pred_after
         }
 
-    def run_adversarial_attack(self, steps=5000):
+    def run_adversarial_attack(self):
         trial_index = 0
-        while trial_index < steps and not self.is_perturbed():
+        while trial_index < self.steps and not self.is_perturbed():
             attack_group = self.select_group()  # Select the target pixel group to perturb
 
             # Simulate attacking the target pixel group and retrieve the potential reward
@@ -158,6 +158,8 @@ class EpsilonGreedyUntargeted(UntargetedAttack):
 
             # Update the average historical reward of the target pixel group no matter if the reward was positive or not
             self.update(attack_group, potential_reward)
+
+            trial_index += 1
 
         if self.is_perturbed() and self.verbose:
             print(f"Image successfully perturbed in {trial_index} rounds")
