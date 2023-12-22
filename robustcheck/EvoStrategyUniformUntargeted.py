@@ -173,20 +173,23 @@ class EvoStrategyUniformUntargeted(EvoStrategy, UntargetedAttack):
             return True
         return False
 
+    def _flush_memory(self):
+        best_candidate = np.copy(self.get_best_candidate())
+        del self.active_generation
+        self.active_generation = [best_candidate]
+        self.fitness_scores = [np.max(self.fitness_scores)]
+        gc.collect()
+
     def run_adversarial_attack(self):
         generation_idx = 0
 
         while generation_idx < self.steps and not self.is_perturbed():
             self._generate_next_generation()
+            if self.clean_memory:
+                self._flush_memory()
             generation_idx += 1
 
         best_candidate = np.copy(self.get_best_candidate())
-
-        if self.clean_memory:
-            del self.active_generation
-            self.active_generation = [best_candidate]
-            self.fitness_scores = [np.max(self.fitness_scores)]
-            gc.collect()
 
         if self.verbose:
             model_pred_best_candidate = self.model.predict(
