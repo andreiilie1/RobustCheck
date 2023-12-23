@@ -13,19 +13,25 @@ class RobustnessCheck:
         self.y_test = y_test
 
         if len(self.x_test) != len(self.y_test):
-            raise Exception(f"Lengths of x_test and y_test do not match: {len(self.x_test)} vs {len(self.y_test)}")
+            raise Exception(
+                f"Lengths of x_test and y_test do not match: {len(self.x_test)} vs {len(self.y_test)}"
+            )
 
         self._dataset_size = len(x_test)
 
         if attack not in config.SUPPORTED_ATTACKS:
-            raise Exception(f"{attack} is not one of the supported backend types: {config.SUPPORTED_ATTACKS}")
+            raise Exception(
+                f"{attack} is not one of the supported backend types: {config.SUPPORTED_ATTACKS}"
+            )
 
         self.attack = attack
         self.attack_params = attack_params
 
         for attack_param_key in config.DEFAULT_PARAMS[attack]:
             if attack_param_key not in self.attack_params:
-                self.attack_params[attack_param_key] = config.DEFAULT_PARAMS[attack][attack_param_key]
+                self.attack_params[attack_param_key] = config.DEFAULT_PARAMS[attack][
+                    attack_param_key
+                ]
 
         # TODO: check if attack_params are the ones corresponding to the attack. Map these in robustcheck.config
 
@@ -34,7 +40,7 @@ class RobustnessCheck:
         proba_outputs = self.model.predict(x_test)
         self._y_pred = np.argmax(proba_outputs, axis=1)
 
-        self._correct_pred_mask = (self._y_pred == self.y_test)
+        self._correct_pred_mask = self._y_pred == self.y_test
         self._accuracy = np.mean(self._correct_pred_mask)
 
         print("Accuracy: ", self._accuracy)
@@ -43,6 +49,11 @@ class RobustnessCheck:
         self._stats = {}
 
     def run_robustness_check(self):
+        """
+
+        Return:
+
+        """
         attack_class = config.SUPPORTED_ATTACKS[self.attack]
         index_to_adversarial_strategy = {}
 
@@ -59,7 +70,9 @@ class RobustnessCheck:
 
                 no_steps = index_to_adversarial_strategy[index].run_adversarial_attack()
 
-                assert no_steps > 0  # This should hold as any correctly classified image requires at least one query
+                assert (
+                    no_steps > 0
+                )  # This should hold as any correctly classified image requires at least one query
 
         self._index_to_adversarial_strategy = index_to_adversarial_strategy
         stats = self._compute_robustness_stats()
@@ -70,7 +83,9 @@ class RobustnessCheck:
 
     def _compute_robustness_stats(self):
         if self._index_to_adversarial_strategy == {}:
-            raise Exception("There is no adversarial strategy dictionary compute as part of this instance")
+            raise Exception(
+                "There is no adversarial strategy dictionary compute as part of this instance"
+            )
 
         successful_perturbation_count = 0
         successful_perturbation_queries = []
@@ -88,15 +103,21 @@ class RobustnessCheck:
 
             if self._index_to_adversarial_strategy[i].is_perturbed():
                 successful_perturbation_count += 1
-                successful_perturbation_queries.append(self._index_to_adversarial_strategy[i].queries)
+                successful_perturbation_queries.append(
+                    self._index_to_adversarial_strategy[i].queries
+                )
 
                 curr_l0 = image_distance(
-                    self._index_to_adversarial_strategy[i].get_best_candidate(), img, norm="L0"
+                    self._index_to_adversarial_strategy[i].get_best_candidate(),
+                    img,
+                    norm="L0",
                 )
                 successful_perturbation_l0_distances.append(curr_l0)
 
                 curr_l2 = image_distance(
-                    self._index_to_adversarial_strategy[i].get_best_candidate(), img, norm="L2"
+                    self._index_to_adversarial_strategy[i].get_best_candidate(),
+                    img,
+                    norm="L2",
                 )
                 successful_perturbation_l2_distances.append(curr_l2)
 
@@ -105,12 +126,16 @@ class RobustnessCheck:
                 failed_perturbation_count += 1
                 failed_perturbation_indices.append(i)
 
-        img_shape = np.shape(self._index_to_adversarial_strategy[adv_evo_strategy_keys[0]].img)
+        img_shape = np.shape(
+            self._index_to_adversarial_strategy[adv_evo_strategy_keys[0]].img
+        )
         count_px = img_shape[0] * img_shape[1] * img_shape[2]
 
         # Will report l2 distances on [0,1] pixel scale, as this is usual in the literature
         # e.g. ImageNet is on [0,255]. Note l0 doesn't need to be normalised, as it's a count
-        img_scale = self._index_to_adversarial_strategy[adv_evo_strategy_keys[0]].pixel_space_max
+        img_scale = self._index_to_adversarial_strategy[
+            adv_evo_strategy_keys[0]
+        ].pixel_space_max
 
         return {
             "count_succ": int(successful_perturbation_count),
@@ -122,8 +147,10 @@ class RobustnessCheck:
             "indices_fail": failed_perturbation_indices,
             "queries_succ_mean": np.mean(successful_perturbation_queries),
             "l0_dists_succ_mean": np.mean(successful_perturbation_l0_distances),
-            "l2_dists_succ_mean": np.mean(successful_perturbation_l2_distances) / img_scale,
-            "l2_dists_succ_mean_pp": np.mean(successful_perturbation_l2_distances) / (count_px * img_scale),
+            "l2_dists_succ_mean": np.mean(successful_perturbation_l2_distances)
+            / img_scale,
+            "l2_dists_succ_mean_pp": np.mean(successful_perturbation_l2_distances)
+            / (count_px * img_scale),
         }
 
     def print_robustness_stats(self):
