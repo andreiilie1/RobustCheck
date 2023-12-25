@@ -1,33 +1,62 @@
-name: Deploy to GitHub Pages
+# name: Deploy to GitHub Pages
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v2
+
+#       - name: Set up Python  # If you need Python for building your docs
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: '3.x'
+
+#       - name: Build the Docs  # Replace this with your actual build steps
+#         run: |
+#           # Add commands here to build your documentation
+#           # For example, if you're using Sphinx:
+#           pip install sphinx
+#           sphinx-build -M html ./docs/source/ ./docs/build/
+#           cd ./docs/build/html
+#           pwd
+#           ls
+
+#       - name: Publish to GitHub Pages
+#         uses: peaceiris/actions-gh-pages@v3
+#         with:
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+#           publish_dir: ./docs/build/html  # Adjust this path to where your built HTML files are
+
+
+name: documentation
+
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: write
+
 jobs:
-  deploy:
+  docs:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Set up Python  # If you need Python for building your docs
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-
-      - name: Build the Docs  # Replace this with your actual build steps
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+      - name: Install dependencies
         run: |
-          # Add commands here to build your documentation
-          # For example, if you're using Sphinx:
-          pip install sphinx
-          sphinx-build -M html ./docs/source/ ./docs/build/
-          cd ./docs/build/html
-          pwd
-          ls
-
-      - name: Publish to GitHub Pages
+          pip install sphinx sphinx_rtd_theme myst_parser
+      - name: Sphinx build
+        run: |
+          sphinx-build doc _build
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
+          publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/build/html  # Adjust this path to where your built HTML files are
+          publish_dir: _build/
+          force_orphan: true
