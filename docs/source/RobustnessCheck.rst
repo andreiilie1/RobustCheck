@@ -8,3 +8,9 @@ RobustnessCheck
 
 .. autoclass:: robustcheck.RobustnessCheck.RobustnessCheck
    :members:
+
+This is the main class to <stuff>
+
+Use the method below to run it:
+
+   .. automethod:: run_robustness_check
