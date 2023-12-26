@@ -6,8 +6,7 @@
 RobustnessCheck
 ===============
 
-.. automodule:: robustcheck.RobustnessCheck
-.. autoclass:: RobustnessCheck
+.. autoclass:: robustcheck.RobustnessCheck.RobustnessCheck
    :members:
 .. automethod:: RobustnessCheck.run_robustness_check
 .. automethod:: RobustnessCheck.print_robustness_stats
