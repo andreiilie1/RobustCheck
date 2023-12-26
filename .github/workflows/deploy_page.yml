@@ -17,6 +17,14 @@ jobs:
       - name: Sphinx build
         run: |
           sphinx-build docs/source _build
+          echo "Sphinx build completed"
+          ls -alh _build/
+      - name: Debug Deploy to GitHub Pages
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        run: |
+          echo "Deploying to GitHub Pages"
+          echo "Event: ${GITHUB_EVENT_NAME}"
+          echo "Branch: ${GITHUB_REF}"
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
