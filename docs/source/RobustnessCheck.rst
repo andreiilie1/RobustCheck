@@ -6,7 +6,7 @@
 RobustnessCheck
 ===============
 
-.. currentmodule: robustcheck.RobustnessCheck
+.. currentmodule: robustcheck
 .. autoclass:: RobustnessCheck
    :members:
    .. automethod:: run_robustness_check
