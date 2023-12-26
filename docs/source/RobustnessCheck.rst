@@ -9,5 +9,3 @@ RobustnessCheck
 .. currentmodule: robustcheck
 .. autoclass:: RobustnessCheck
    :members:
-   .. automethod:: run_robustness_check
-   .. automethod:: print_robustness_stats
