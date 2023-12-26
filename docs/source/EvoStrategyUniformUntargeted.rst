@@ -6,8 +6,7 @@
 EvoStrategyUniformUntargeted
 ============================
 
-.. automodule:: robustcheck.EvoStrategyUniformUntargeted
-.. autoclass:: EvoStrategyUniformUntargeted
+.. autoclass:: robustcheck.types.EvoStrategyUniformUntargeted.EvoStrategyUniformUntargeted
    :members:
 .. automethod:: EvoStrategyUniformUntargeted.print_initial_state
 .. automethod:: EvoStrategyUniformUntargeted.run_adversarial_attack
