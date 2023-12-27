@@ -13,16 +13,5 @@ RobustnessCheck
 This is the main class to <stuff>
 
 Use the method below to run it:
-x
 
 .. automethod:: RobustnessCheck.run_robustness_check
-
-y
-
-.. automethod:: run_robustness_check
-
-z
-
-.. autoclass:: RobustnessCheck
-.. automethod:: run_robustness_check
-
