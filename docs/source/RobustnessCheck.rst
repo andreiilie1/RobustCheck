@@ -6,11 +6,12 @@
 RobustnessCheck
 ===============
 
-.. autoclass:: robustcheck.RobustnessCheck.RobustnessCheck
+.. automodule::robustcheck.RobustnessCheck
+.. autoclass:: RobustnessCheck
    :members:
 
 This is the main class to <stuff>
 
 Use the method below to run it:
 
-   .. automethod:: run_robustness_check
+.. autofunction:: RobustnessCheck.run_robustness_check
