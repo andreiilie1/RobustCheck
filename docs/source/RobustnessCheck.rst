@@ -14,4 +14,4 @@ This is the main class to <stuff>
 
 Use the method below to run it:
 
-.. autofunction:: run_robustness_check
+.. autofunction:: RobustnessCheck.run_robustness_check
