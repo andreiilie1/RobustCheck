@@ -6,7 +6,7 @@
 RobustnessCheck
 ===============
 
-.. automodule::robustcheck
+.. automodule:: robustcheck
 .. autoclass:: RobustnessCheck
    :members:
 
@@ -14,4 +14,4 @@ This is the main class to <stuff>
 
 Use the method below to run it:
 
-.. autofunction:: RobustnessCheck.run_robustness_check
+.. autofunction:: run_robustness_check
