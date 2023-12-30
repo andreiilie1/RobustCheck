@@ -1,5 +1,7 @@
 # RobustnessCheck Package
-![RobustnessCheck Package Logo](assets/RobustnessCheck-logo.png)
+
+<img src="assets/RobustnessCheck-logo.png" width="400" />
+
 ## Overview
 RobustnessCheck is a Python package designed for evaluating the robustness of image classification machine learning 
 models. It provides tooling to apply simple, yet effective and efficient black-box untargeted adversarial attacks 
