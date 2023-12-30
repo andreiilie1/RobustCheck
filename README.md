@@ -2,6 +2,10 @@
 
 <img src="assets/RobustnessCheck-logo.png" width="400" />
 
+<i>"As the oak resists the wind and grows stronger, let our models 
+face adversarial challenges and emerge more robust."</i> - ChatGPT's take on 
+Marcus Aurelius explaining the importance of robust models.
+
 ## Overview
 RobustnessCheck is a Python package designed for evaluating the robustness of image classification machine learning 
 models. It provides tooling to apply simple, yet effective and efficient black-box untargeted adversarial attacks 
