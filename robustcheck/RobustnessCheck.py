@@ -28,7 +28,7 @@ class RobustnessCheck:
         run_robustness_check(self): Runs the specified attack against the model for each image from x_test with
             corresponding label from y_test. Returns a dictionary containing the robustness stats.
         print_robustness_stats(self): Prints the robustness stats of the model against the input dataset in a
-            human-readable form. This runs no computation per se, but just prints cached  robustness stats as produced
+            human-readable format. This runs no computation per se, but just prints cached  robustness stats as produced
             by run_robustness_check(self). Therefore, it needs run_robustness_check(self) to have completed successfully
             before being called, otherwise it will raise an exception.
     """
@@ -75,8 +75,13 @@ class RobustnessCheck:
 
     def run_robustness_check(self):
         """
+        Runs the robustness check of the model against the correctly clasfied images from x_test. Note there is no
+        point in adversarially perturbing the images that are already misclassified.
 
-        Return:
+        Returns:
+            A dictionary containing statistics about the robustness of the model. These are based on the success rates,
+            adversarial distances and counts of queries required until successful perturbations of the underlying
+            black-box adversarial attack that is used.
 
         """
         attack_class = config.SUPPORTED_ATTACKS[self.attack]
@@ -179,6 +184,9 @@ class RobustnessCheck:
         }
 
     def print_robustness_stats(self):
+        """
+        Prints the robustness check statistics in a human-readable format.
+        """
         if self._stats == {}:
             raise Exception("No stats have been computed as part of this instance")
 

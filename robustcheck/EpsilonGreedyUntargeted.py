@@ -141,6 +141,13 @@ class EpsilonGreedyUntargeted(UntargetedAttack):
         }
 
     def run_adversarial_attack(self):
+        """
+        Runs the adversarial attack.
+
+        Returns:
+             An integer representing the number of attack steps until either the attack was successful or the maximum
+             steps threshold was reached.
+        """
         trial_index = 0
         while trial_index < self.steps and not self.is_perturbed():
             attack_group = self.select_group()  # Select the target pixel group to perturb
