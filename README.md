@@ -19,9 +19,9 @@ and published approach [1], and **EpsGreedy**, which is a variation of **EvoBA**
 Epsilon-Greedy exploration strategy.
 
 ## Documentation
-An HTML documentation of the package is available <b> <a href="https://andreiilie1.github.io/RobustCheck/index.html#"> here </a> </b>.
+An HTML documentation of the package is available <b> <a href="https://andreiilie1.github.io/RobustCheck/index.html#">here</a> </b>.
 
-This was generated using <a href="https://www.sphinx-doc.org"> Sphinx </a>.
+<i> This was generated using <a href="https://www.sphinx-doc.org">Sphinx</a>. </i>
 ## Features
 - **Black-box Untargeted Adversarial Attack**: Evaluate model performance under adversarial conditions without the need 
 for internal model details. 
