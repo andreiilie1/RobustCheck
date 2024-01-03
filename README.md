@@ -4,19 +4,24 @@
 
 <i>"As the oak resists the wind and grows stronger, let our models 
 face adversarial challenges and emerge more robust."</i> - ChatGPT's take on   
-Marcus Aurelius explaining the importance of robust models.
+Marcus Aurelius thinking about the importance of models' robustness.
 
 ## Overview
 RobustnessCheck is a Python package designed for evaluating the robustness of image classification machine learning 
 models. It provides tooling to apply simple, yet effective and efficient black-box untargeted adversarial attacks 
-against models that expose a batch predict function which outputs probability distributions. 
+against models that expose a batch predict function that outputs probability distributions. 
 
 This tool is essential for researchers and practitioners who wish to assess the resilience of their models to 
 adversarial perturbations or their robustness in a more general way.
 
-The black-box, untargeted adversarial attacks used for robustness assessment are **EvoBA**, which is a peer reviewed
+The black-box, untargeted adversarial attacks used for robustness assessment are **EvoBA**, which is a peer-reviewed
 and published approach [1], and **EpsGreedy**, which is a variation of **EvoBA** following the classic 
 Epsilon-Greedy exploration strategy.
+
+## Documentation
+An HTML documentation of the package is available <b> <a href="https://andreiilie1.github.io/RobustCheck/index.html#"> here </a> </b>.
+
+This was generated using <a href="https://www.sphinx-doc.org"> Sphinx </a>.
 ## Features
 - **Black-box Untargeted Adversarial Attack**: Evaluate model performance under adversarial conditions without the need 
 for internal model details. 
