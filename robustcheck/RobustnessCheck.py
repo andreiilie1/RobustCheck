@@ -3,10 +3,35 @@ import numpy as np
 from robustcheck import config
 from tqdm import tqdm
 from robustcheck.utils.metrics import image_distance
-from robustcheck.types.AttackType import AttackType
 
 
 class RobustnessCheck:
+    """ Main entrypoint to the package: used to run adversarial robustness benchmarks against image classifiers.
+
+    It encapsulates the target model, a labelled dataset used for the robustness assessment, the attack to be used
+    to run the robustness check, and the attack's parameters. It provides a method to run the robustness check of the
+    model against the dataset by using one of the black-box adversarial attacks we provide as part of the package.
+
+    Attributes:
+        model: Target model to be assessed from a robustness point of view. This has to expose a predict method that
+            returns the output probability distributions when provided a batch of images as input.
+        x_test: An array of images, each of them represented as an array (HxWxC). This represents the sample of images
+            that will be used for running the robustness check.
+        y_test: An array of integers representing the correct class indexes of the images in x_test.
+        attack: A types.AttackType enum field specifying which attack to use to run the robusntess check. Most common
+            choice is AttackType.EVOBA.
+        attack_params: A dictionary mapping parameters that the chosen attack expects and values. In case some mandatory
+            attack parameters are not specified, these will be filled automatically according to default values that
+            can be found in config.DEFAULT_PARAMS.
+
+    Methods:
+        run_robustness_check(self): Runs the specified attack against the model for each image from x_test with
+            corresponding label from y_test. Returns a dictionary containing the robustness stats.
+        print_robustness_stats(self): Prints the robustness stats of the model against the input dataset in a
+            human-readable form. This runs no computation per se, but just prints cached  robustness stats as produced
+            by run_robustness_check(self). Therefore, it needs run_robustness_check(self) to have completed successfully
+            before being called, otherwise it will raise an exception.
+    """
     def __init__(self, model, x_test, y_test, attack, attack_params):
         self.model = model
         self.x_test = x_test
