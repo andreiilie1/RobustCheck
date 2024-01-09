@@ -2,6 +2,7 @@ import numpy as np
 
 from robustcheck import config
 from tqdm import tqdm
+from robustcheck.utils import PRINT_SEPARATOR
 from robustcheck.utils.metrics import image_distance
 
 
@@ -18,7 +19,7 @@ class RobustnessCheck:
         x_test: An array of images, each of them represented as an array (HxWxC). This represents the sample of images
             that will be used for running the robustness check.
         y_test: An array of integers representing the correct class indexes of the images in x_test.
-        attack: A types.AttackType enum field specifying which attack to use to run the robusntess check. Most common
+        attack: A types.AttackType enum field specifying which attack to use to run the robustness check. Most common
             choice is AttackType.EVOBA.
         attack_params: A dictionary mapping parameters that the chosen attack expects and values. In case some mandatory
             attack parameters are not specified, these will be filled automatically according to default values that
@@ -75,7 +76,7 @@ class RobustnessCheck:
 
     def run_robustness_check(self):
         """
-        Runs the robustness check of the model against the correctly clasfied images from x_test. Note there is no
+        Runs the robustness check of the model against the correctly classified images from x_test. Note there is no
         point in adversarially perturbing the images that are already misclassified.
 
         Returns:
@@ -190,7 +191,6 @@ class RobustnessCheck:
         if self._stats == {}:
             raise Exception("No stats have been computed as part of this instance")
 
-        SEP = "_" * 20
         count_succ = self._stats["count_succ"]
         count_fail = self._stats["count_fail"]
         count_total = count_succ + count_fail
@@ -205,7 +205,7 @@ class RobustnessCheck:
 
         print()
         print("EvoBA STATS (L0 attack)")
-        print(SEP)
+        print(PRINT_SEPARATOR)
 
         print(f"Perturbed successfully {count_succ}/{count_total} images")
         print(f"Average query count: {queries_succ_mean}")
@@ -219,5 +219,5 @@ class RobustnessCheck:
         print()
         print(f"Max query count: {max(queries_succ)}")
         print(f"Max l0 dist: {max(l0_dists_succ)}")
-        print(SEP)
+        print(PRINT_SEPARATOR)
         print()
