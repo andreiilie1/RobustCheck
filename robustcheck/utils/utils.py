@@ -3,6 +3,7 @@ import numpy as np
 import json
 import mlflow
 import os
+import math
 from robustcheck.types import AttackType
 
 PRINT_SEPARATOR = "_" * 19
@@ -269,6 +270,7 @@ def start_mlflow(run_name, experiment_name):
         return "FAIL"
 
 
+# TODO: move all mlflow logic to the RobustnessCheck class/helper class associated with it. Make these me
 def generate_mlflow_logs(
         strategy_objects: dict,
         attack_type: AttackType,
@@ -353,18 +355,46 @@ def generate_mlflow_logs(
     return "SUCCESS"
 
 
-def get_grid_pixel_groups(patch_size, image_size):
-    # Generate grid of areas (one area = one bandit)
-    assert image_size % patch_size == 0
+# def get_grid_pixel_groups(patch_size, image_size):
+#     # Generate grid of areas (one area = one bandit)
+#     assert image_size % patch_size == 0
+#
+#     pixel_groups = []
+#     for i in range(int(image_size / patch_size)):
+#         for j in range(int(image_size / patch_size)):
+#             current_group = []
+#             for pixel_i in range(patch_size):
+#                 for pixel_j in range(patch_size):
+#                     pixel = (patch_size * i + pixel_i, patch_size * j + pixel_j)
+#                     current_group.append(pixel)
+#             pixel_groups.append(current_group)
+#
+#     return pixel_groups
 
+
+def get_grid_pixel_groups(patch_size, image_size):
+    """
+    Generates a grid of rectangles of size patch_size to cover an image of size image_size with no padding.
+
+    Args:
+        patch_size: A tuple of two integers representing the size of the rectangle that will be used to patch the image
+            and generate a rectangular grid
+        image_size: A tuple of two integers representing the size of the image to be patched.
+
+    Returns:
+        A list of lists of integer pairs, each list of integer pairs representing pixel indices belonging to the same
+            rectangular patch.
+    """
     pixel_groups = []
-    for i in range(int(image_size / patch_size)):
-        for j in range(int(image_size / patch_size)):
+    for i in range(math.ceil(image_size[0] / patch_size[0])):
+        for j in range(math.ceil(image_size[1] / patch_size[1])):
             current_group = []
-            for pixel_i in range(patch_size):
-                for pixel_j in range(patch_size):
-                    pixel = (patch_size * i + pixel_i, patch_size * j + pixel_j)
-                    current_group.append(pixel)
+            for pixel_i_delta in range(patch_size[0]):
+                for pixel_j_delta in range(patch_size[1]):
+                    pixel_i = patch_size[0] * i + pixel_i_delta
+                    pixel_j = patch_size[1] * j + pixel_j_delta
+                    if pixel_i < image_size[0] and pixel_j < image_size[1]:
+                        current_group.append((pixel_i, pixel_j))
             pixel_groups.append(current_group)
 
     return pixel_groups
