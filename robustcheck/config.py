@@ -13,11 +13,11 @@ DEFAULT_PARAMS = {
         {
             "generation_size": 30,
             "one_step_perturbation_pixel_count": 1,
-            "steps": 100
+            "steps": 100,
         },
     AttackType.EPSGREEDY:
         {
             "epsilon": 0.1,
-            "steps": 1000
+            "steps": 1000,
         },
 }
