@@ -50,7 +50,7 @@ batch to be classified as any of the existing classes.
 
 Import the RobustnessCheck package as follows:
 ```
-import RobustnessCheck
+import robustcheck
 ```
 
 ### Step 2: Prepare Your Data
@@ -62,7 +62,7 @@ Provide a sample of images (`x_test`) with their correct labels (`test_labels`).
 Create a `RobustnessCheck` object with your model, test data, and attack parameters:
 
 ```
-rc = RobustnessCheck.RobustnessCheck(
+rc = robustcheck.RobustnessCheck(
     model=model,
     x_test=x_test,
     y_test=test_labels,
