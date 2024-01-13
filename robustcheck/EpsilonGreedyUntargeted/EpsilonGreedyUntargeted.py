@@ -190,3 +190,5 @@ class EpsilonGreedyUntargeted(UntargetedAttack):
         pred_label = np.argmax(self._model_perturbed_prediction)
         correct_output = (pred_label == self.label)
         return not correct_output
+
+    # TODO: move to /attacks module together with EvoStrategyUniformUntargeted, keep only RobustnessCheck in main folder
