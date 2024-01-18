@@ -184,6 +184,15 @@ class RobustnessCheck:
             / (count_px * img_scale),
         }
 
+    def get_stats(self):
+        """
+        Returns:
+             A dictionary containing the statistics of the robustness check if it was run or raises an exception if not.
+        """
+        if self._stats == {}:
+            raise Exception("No stats have been computed as part of this instance")
+        return dict.copy(self._stats)
+
     def print_robustness_stats(self):
         """
         Prints the robustness check statistics in a human-readable format.

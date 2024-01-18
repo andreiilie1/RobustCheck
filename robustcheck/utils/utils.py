@@ -9,14 +9,6 @@ from robustcheck.types import AttackType
 PRINT_SEPARATOR = "_" * 19
 
 
-def cap(value, inf, sup):
-    if value <= inf:
-        return inf
-    if value >= sup:
-        return sup
-    return value
-
-
 def get_evoba_stats(adv_evo_strategy: dict):
     count_succ = 0
     queries_succ = []
@@ -262,7 +254,7 @@ def start_mlflow(run_name, experiment_name):
     try:
         print(f"Logging run {run_name} under experiment {experiment_name}")
         mlflow.set_experiment(experiment_name)
-        mlflow.set_tracking_uri("/home/ailie/Repos/BBAttacks/mlruns/")
+        # mlflow.set_tracking_uri("/home/ailie/Repos/BBAttacks/mlruns/")
         mlflow.start_run(run_name=run_name)
     except Exception as e:
         print(e)
@@ -270,7 +262,12 @@ def start_mlflow(run_name, experiment_name):
         return "FAIL"
 
 
-# TODO: move all mlflow logic to the RobustnessCheck class/helper class associated with it. Make these me
+def generate_mlflow_logs(robustness_check):
+    robustness_metrics = robustness_check.get_metrics()
+    for metric in robustness_metrics:
+        mlflow.log_metric(metric, robustness_metrics[metric])
+
+
 def generate_mlflow_logs(
         strategy_objects: dict,
         attack_type: AttackType,
