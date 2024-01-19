@@ -18,59 +18,57 @@ class NpEncoder(json.JSONEncoder):
         return super(NpEncoder, self).default(obj)
 
 
-def save_evoba_artifacts(evoba_stats, run_output_folder):
-    with open(run_output_folder + "/evoba_l0_stats.json", "w") as outfile:
-        json.dump(dict(evoba_stats), outfile, cls=NpEncoder)
-
-    np.save(run_output_folder + "/evoba_l0_stats.npy", evoba_stats)
-
-    fig = plt.figure(figsize=(20, 14))
-    plt.hist(evoba_stats["l0_dists_succ"])
-    plt.title("EvoBA L0 distances histogram", fontsize=26)
-    plt.xlabel("L0 distance", fontsize=24)
-    plt.xticks(fontsize=24)
-    plt.yticks(fontsize=24)
-    plt.ylabel("Count images", fontsize=24)
-    plt.savefig(run_output_folder + "/evoba_l0_hist.png")
-
-    fig = plt.figure(figsize=(20, 14))
-    plt.hist(evoba_stats["queries_succ"])
-    plt.title("EvoBA queries histogram", fontsize=26)
-    plt.xlabel("Queries", fontsize=24)
-    plt.xticks(fontsize=24)
-    plt.yticks(fontsize=24)
-    plt.ylabel("Count images", fontsize=24)
-    plt.savefig(run_output_folder + "/evoba_l0_queries_hist.png")
-
-
 def save_robustness_stats_artifacts(robustness_check, run_output_folder):
     robustness_stats = robustness_check.get_stats()
 
     with open(run_output_folder + "/robustness_stats.json", "w") as outfile:
         json.dump(dict(robustness_stats), outfile, cls=NpEncoder)
 
-    fig = plt.figure(figsize=(20, 14))
-    plt.hist(robustness_stats["l2_dists_succ"])
-    plt.title("L2 distances histogram", fontsize=26)
-    plt.xlabel("L2 distance", fontsize=24)
-    plt.xticks(fontsize=24)
-    plt.yticks(fontsize=24)
-    plt.ylabel("Count images", fontsize=24)
-    plt.savefig(run_output_folder + "/l2_hist.png")
+    l0_dists_succ = robustness_stats["l0_dists_succ"]
+    l2_dists_succ = robustness_stats["l0_dists_succ"]
+    queries_succ = robustness_stats["queries_succ"]
 
-    fig = plt.figure(figsize=(20, 14))
-    plt.hist(robustness_stats["queries_succ"])
-    plt.title("SimBA queries histogram", fontsize=26)
-    plt.xlabel("Queries", fontsize=24)
-    plt.xticks(fontsize=24)
-    plt.yticks(fontsize=24)
-    plt.ylabel("Count images", fontsize=24)
-    plt.savefig(run_output_folder + "/queries_hist.png")
+    l0_dists_hist_fname = "l0_dists_histogram.png"
+    _ = save_histogram(
+        values=l0_dists_succ,
+        fname=os.path.join(run_output_folder, l0_dists_hist_fname),
+        title="L0 distance distribution of successful perturbations",
+        x_label="L0 distance",
+        y_label="Image count",
+        clf=False,
+    )
+
+    l2_dists_hist_fname = "l2_dists_histogram.png"
+    _ = save_histogram(
+        values=l2_dists_succ,
+        fname=os.path.join(run_output_folder, l2_dists_hist_fname),
+        title="L2 distance distribution of successful perturbations",
+        x_label="L2 distance",
+        y_label="Image count",
+        clf=False,
+    )
+
+    queries_hist_fname = "queries_histogram.png"
+    _ = save_histogram(
+        values=queries_succ,
+        fname=os.path.join(run_output_folder, queries_hist_fname),
+        title="Query count distribution of successful perturbations",
+        x_label="Query count",
+        y_label="Image count",
+        clf=False,
+    )
 
 
-def save_histogram(values, fname, title, clf=True, figsize=(20, 14)):
-    fig = plt.figure(figsize=figsize)
+def save_histogram(values, fname, title, x_label="", y_label="", clf=True, fig_size=(20, 14), font_size=24):
+    fig = plt.figure(figsize=fig_size)
     plt.title(title)
+
+    plt.xlabel(x_label, fontsize=font_size)
+    plt.ylabel(y_label, fontsize=font_size)
+
+    plt.xticks(fontsize=font_size)
+    plt.yticks(fontsize=font_size)
+
     plt.hist(values)
     plt.savefig(fname, bbox_inches="tight")
 
@@ -79,29 +77,32 @@ def save_histogram(values, fname, title, clf=True, figsize=(20, 14)):
 
     return fig
 
+
 def generate_mlflow_logs(robustness_check, run_name, experiment_name="default", tracking_uri="mlruns"):
     mlflow.set_tracking_uri(tracking_uri)
     mlflow.set_experiment(experiment_name)
     mlflow.start_run(run_name=run_name)
 
-    robustness_metrics = robustness_check.get_stats()
+    robustness_stats = robustness_check.get_stats()
 
-    for metric in robustness_metrics:
-        metric_value = robustness_metrics[metric]
+    for metric in robustness_stats:
+        metric_value = robustness_stats[metric]
         # Only log non-array and non-list stats, as robustness_metrics can also contain lists or arrays that are not
         #  supported by mlflow.log_metric
         if type(metric_value) not in [list, np.array]:
-            mlflow.log_metric(metric, robustness_metrics[metric])
+            mlflow.log_metric(metric, robustness_stats[metric])
 
-    l0_dists_succ = robustness_metrics["l0_dists_succ"]
-    l2_dists_succ = robustness_metrics["l0_dists_succ"]
-    queries_succ = robustness_metrics["queries_succ"]
+    l0_dists_succ = robustness_stats["l0_dists_succ"]
+    l2_dists_succ = robustness_stats["l0_dists_succ"]
+    queries_succ = robustness_stats["queries_succ"]
 
     l0_dists_hist_fname = "l0_dists_histogram.png"
     _ = save_histogram(
         values=l0_dists_succ,
         fname=l0_dists_hist_fname,
-        title="L0 norm distribution of successful perturbations",
+        title="L0 distance distribution of successful perturbations",
+        x_label="L0 distance",
+        y_label="Image count",
         clf=True,
     )
     mlflow.log_artifact(l0_dists_hist_fname)
@@ -111,7 +112,9 @@ def generate_mlflow_logs(robustness_check, run_name, experiment_name="default", 
     _ = save_histogram(
         values=l2_dists_succ,
         fname=l2_dists_hist_fname,
-        title="L2 norm distribution of successful perturbations",
+        title="L2 distance distribution of successful perturbations",
+        x_label="L2 distance",
+        y_label="Image count",
         clf=True,
     )
     mlflow.log_artifact(l2_dists_hist_fname)
@@ -122,6 +125,8 @@ def generate_mlflow_logs(robustness_check, run_name, experiment_name="default", 
         values=queries_succ,
         fname=queries_hist_fname,
         title="Query counts of successful perturbations",
+        x_label="Queries",
+        y_label="Image count",
         clf=True,
     )
     mlflow.log_artifact(queries_hist_fname)
