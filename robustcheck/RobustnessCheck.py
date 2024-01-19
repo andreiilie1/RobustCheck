@@ -115,7 +115,7 @@ class RobustnessCheck:
     def _compute_robustness_stats(self):
         if self._index_to_adversarial_strategy == {}:
             raise Exception(
-                "There is no adversarial strategy dictionary compute as part of this instance"
+                "There is no adversarial strategy dictionary computed as part of this instance"
             )
 
         successful_perturbation_count = 0
@@ -127,9 +127,9 @@ class RobustnessCheck:
         failed_perturbation_count = 0
         failed_perturbation_indices = []
 
-        adv_evo_strategy_keys = list(self._index_to_adversarial_strategy.keys())
+        adv_evo_strategy_indices = self.get_adversarial_strategy_indices()
 
-        for i in adv_evo_strategy_keys:
+        for i in adv_evo_strategy_indices:
             img = self._index_to_adversarial_strategy[i].img
 
             if self._index_to_adversarial_strategy[i].is_perturbed():
@@ -158,14 +158,14 @@ class RobustnessCheck:
                 failed_perturbation_indices.append(i)
 
         img_shape = np.shape(
-            self._index_to_adversarial_strategy[adv_evo_strategy_keys[0]].img
+            self._index_to_adversarial_strategy[adv_evo_strategy_indices[0]].img
         )
         count_px = img_shape[0] * img_shape[1] * img_shape[2]
 
         # Will report l2 distances on [0,1] pixel scale, as this is usual in the literature
         # e.g. ImageNet is on [0,255]. Note l0 doesn't need to be normalised, as it's a count
         img_scale = self._index_to_adversarial_strategy[
-            adv_evo_strategy_keys[0]
+            adv_evo_strategy_indices[0]
         ].pixel_space_max
 
         return {
@@ -192,6 +192,18 @@ class RobustnessCheck:
         if self._stats == {}:
             raise Exception("No stats have been computed as part of this instance")
         return dict.copy(self._stats)
+
+    def get_adversarial_strategy_indices(self):
+        adv_evo_strategy_indices = list(self._index_to_adversarial_strategy.keys())
+        return adv_evo_strategy_indices
+
+    def get_adversarial_strategy_perturbed_flag(self, index):
+        adversarial_strategy = self._index_to_adversarial_strategy[index]
+        return adversarial_strategy.is_perturbed()
+
+    def get_adversarial_strategy_perturbed_image(self, index):
+        adversarial_strategy = self._index_to_adversarial_strategy[index]
+        return adversarial_strategy.get_best_candidate()
 
     def print_robustness_stats(self):
         """
