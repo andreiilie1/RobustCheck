@@ -34,8 +34,7 @@ class EvoStrategy(ABC):
 
     def get_best_candidate(self):
         """Retrieves the fittest individual from the active generation."""
-        fitnesses = self.fitness_scores
-        best_candidate_index = np.argmax(fitnesses)
+        best_candidate_index = np.argmax(self.fitness_scores)
         return self.active_generation[best_candidate_index]
 
     @abstractmethod
