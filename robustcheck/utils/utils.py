@@ -18,6 +18,25 @@ class NpEncoder(json.JSONEncoder):
         return super(NpEncoder, self).default(obj)
 
 
+def save_histogram(values, fname, title, x_label="", y_label="", clf=True, fig_size=(20, 14), font_size=24):
+    fig = plt.figure(figsize=fig_size)
+    plt.title(title)
+
+    plt.xlabel(x_label, fontsize=font_size)
+    plt.ylabel(y_label, fontsize=font_size)
+
+    plt.xticks(fontsize=font_size)
+    plt.yticks(fontsize=font_size)
+
+    plt.hist(values)
+    plt.savefig(fname, bbox_inches="tight")
+
+    if clf:
+        plt.clf()
+
+    return fig
+
+
 def save_robustness_stats_artifacts(robustness_check, run_output_folder):
     robustness_stats = robustness_check.get_stats()
 
@@ -57,25 +76,6 @@ def save_robustness_stats_artifacts(robustness_check, run_output_folder):
         y_label="Image count",
         clf=False,
     )
-
-
-def save_histogram(values, fname, title, x_label="", y_label="", clf=True, fig_size=(20, 14), font_size=24):
-    fig = plt.figure(figsize=fig_size)
-    plt.title(title)
-
-    plt.xlabel(x_label, fontsize=font_size)
-    plt.ylabel(y_label, fontsize=font_size)
-
-    plt.xticks(fontsize=font_size)
-    plt.yticks(fontsize=font_size)
-
-    plt.hist(values)
-    plt.savefig(fname, bbox_inches="tight")
-
-    if clf:
-        plt.clf()
-
-    return fig
 
 
 def generate_mlflow_logs(robustness_check, run_name, experiment_name="default", tracking_uri="mlruns"):
