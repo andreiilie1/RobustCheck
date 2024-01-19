@@ -65,7 +65,7 @@ class EpsilonGreedyUntargeted(UntargetedAttack):
         """
         if random.random() > self.epsilon:
             # Pick a pixel group with the highest historical reward with probability 1 - self.epsilon.
-            max_reward_indices = np.flatnonzero(np.array(self._values) == np.array(self._values).max())
+            max_reward_indices = np.flatnonzero(np.array(self._values) == np.max(np.array(self._values)))
             max_group_index = np.random.choice(max_reward_indices)
             return max_group_index
         else:
