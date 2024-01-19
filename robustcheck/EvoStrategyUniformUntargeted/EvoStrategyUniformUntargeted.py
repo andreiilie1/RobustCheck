@@ -147,10 +147,12 @@ class EvoStrategyUniformUntargeted(EvoStrategy, UntargetedAttack):
             i = random.randint(0, shape[0] - 1)
             j = random.randint(0, shape[1] - 1)
             for c in range(np.shape(self.img)[2]):
-                sampling_method = (
-                    random.randint if self.pixel_space_int_flag else random.uniform
+                value = (
+                    random.randint(int(self.pixel_space_min), int(self.pixel_space_max))
+                    if self.pixel_space_int_flag
+                    else random.uniform(self.pixel_space_min, self.pixel_space_max)
                 )
-                value = sampling_method(self.pixel_space_min, self.pixel_space_max)
+
                 candidate_copy[i][j][c] = value
         return candidate_copy
 
@@ -163,12 +165,12 @@ class EvoStrategyUniformUntargeted(EvoStrategy, UntargetedAttack):
     def is_perturbed(self):
         best_candidate = self.get_best_candidate()
         if (
-            np.argmax(
-                self.model.predict(
-                    np.expand_dims(best_candidate, axis=0), verbose=False
-                )[0]
-            )
-            != self.label
+                np.argmax(
+                    self.model.predict(
+                        np.expand_dims(best_candidate, axis=0), verbose=False
+                    )[0]
+                )
+                != self.label
         ):
             return True
         return False
