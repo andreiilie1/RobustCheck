@@ -7,7 +7,7 @@ from robustcheck.types.AttackType import AttackType
 
 
 def test_robustness_check():
-    CIFAR100_VGG_PATH = os.path.join(os.path.dirname(__file__), "resources", "models", "cifar-vgg")
+    CIFAR100_VGG_PATH = os.path.join(os.path.dirname(__file__), "resources", "models", "vgg")
     sys.path.append(CIFAR100_VGG_PATH)
 
     import cifar100vgg
