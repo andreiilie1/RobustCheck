@@ -38,6 +38,15 @@ def save_histogram(values, fname, title, x_label="", y_label="", clf=True, fig_s
 
 
 def save_robustness_stats_artifacts(robustness_check, run_output_folder):
+    """
+    Saves robustness check artifacts containings metrics and histograms of queries and perturbartion distances on the
+    local file system.
+
+    Attributes:
+        robustness_check: RobustnessCheck containing the model and dataset to be benchmarked. This requires its
+            run_robustness_check() method to have been executed such that we have metrics to extract from it.
+        run_output_folder: A string representing where to save the arising artifacts.
+    """
     robustness_stats = robustness_check.get_stats()
 
     with open(run_output_folder + "/robustness_stats.json", "w") as outfile:
@@ -79,6 +88,17 @@ def save_robustness_stats_artifacts(robustness_check, run_output_folder):
 
 
 def generate_mlflow_logs(robustness_check, run_name, experiment_name="default", tracking_uri="mlruns"):
+    """
+    Generates robustness check logs on mlflow.
+
+    Arguments:
+        robustness_check: RobustnessCheck containing the model and dataset to be benchmarked. This requires its
+            run_robustness_check() method to have been executed such that we have metrics to extract from it.
+        run_name: A string representing the run name under which the mlflow artifacts and metrics will be logged.
+        experiment_name: A string representing the experiment name under which the mlflow artifacts and metrics will be
+            logged.
+        tracking_uri: A string representing the path where the mlflow artifacts and metrics will be stored.
+    """
     mlflow.set_tracking_uri(tracking_uri)
     mlflow.set_experiment(experiment_name)
     mlflow.start_run(run_name=run_name)
