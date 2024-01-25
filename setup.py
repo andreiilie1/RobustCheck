@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 requirements = [
     "matplotlib >= 3.7.0",
-    "numpy >= 1.24.2",
+    "numpy >= 1.18.0",
     "mlflow >= 1.2.0",
     "tqdm >= 4.64.1",
 ]

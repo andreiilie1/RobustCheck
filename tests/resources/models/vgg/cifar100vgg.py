@@ -2,13 +2,13 @@ from __future__ import print_function
 import numpy as np
 import keras
 import os
-from keras.datasets import cifar100
-from keras.preprocessing.image import ImageDataGenerator
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten
-from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
-from keras import optimizers
-from keras import regularizers
+from tensorflow.keras.datasets import cifar100
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, BatchNormalization
+from tensorflow.keras import optimizers
+from tensorflow.keras import regularizers
 
 
 class CIFAR100VGG:
