@@ -10,8 +10,8 @@ def test_robustness_check():
     CIFAR100_VGG_PATH = os.path.join(os.path.dirname(__file__), "resources", "models", "vgg")
     sys.path.append(CIFAR100_VGG_PATH)
 
-    import cifar100vgg
-    model = cifar100vgg.cifar100vgg(train=False)
+    from cifar100vgg import CIFAR100VGG
+    model = CIFAR100VGG(train=False)
 
     x_test = np.load(os.path.join(os.path.dirname(__file__), "resources", "data", "cifar100_sample_x.npy"))
     y_test = np.load(os.path.join(os.path.dirname(__file__), "resources", "data", "cifar100_sample_y.npy"))
