@@ -9,10 +9,11 @@ requirements = [
 
 setup(
     name="robustcheck",
-    description="Tool for quick assessment of image classifiers robustness",
-    url="",
-    author="Andrei Ilie",
     packages=find_packages(),
+    description="Tool for quick assessment of image classifiers robustness",
+    url="https://github.com/andreiilie1/RobustCheck",
+    author="Andrei Ilie",
+    author_email="andrei0758@gmail.com",
     include_package_data=True,
     python_requires=">=3.8.0",
     install_requires=requirements,
