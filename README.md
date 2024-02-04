@@ -1,9 +1,6 @@
 # RobustnessCheck Package
 
-<img src="assets/RobustnessCheck-logo.png" width="400" />
-
-"<i>'As the oak resists the wind and grows stronger, let our models 
-face adversarial challenges and emerge more robust.'</i> - Marcus Aurelius" - ChatGPT
+<img src="assets/RobustnessCheck-logo2.png" width="400" />
 
 ## Overview
 RobustnessCheck is a Python package designed for evaluating the robustness of image classification machine learning 
@@ -123,3 +120,8 @@ For feature requests, explain what is the feature you would like us to add and w
 
 ## Bibliography
 [1] Neural Information Processing: 28th International Conference, ICONIP 2021, Sanur, Bali, Indonesia, December 8–12, 2021, Proceedings, Part III
+
+#
+
+"<i>'As the oak resists the wind and grows stronger, let our models 
+face adversarial challenges and emerge more robust.'</i> - Marcus Aurelius" - ChatGPT
