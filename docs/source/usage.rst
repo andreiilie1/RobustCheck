@@ -50,9 +50,25 @@ Create a ``RobustnessCheck`` object with your model, test data, and attack param
 Run the robustness check
 ------------------------
 Execute the robustness check:
+
 .. code-block:: python
 
    _ = rc.run_robustness_check()
 
-This is where we actually run the robustness checks by triggering an adversarial attack
+This is where you actually run the robustness checks by triggering an adversarial attack
 against each image that is correctly classified by model in the provided ``x_test`` sample.
+
+Review the robustness metrics
+-----------------------------
+There are various ways to interact with the robustness metrics that ``run_robustness_check()``
+produce. You can print them in a human-readable form, generate and store artifacts containing
+metrics and various plots on the disk, or generate MLFlow logs containing metrics and artifacts.
+
+Printing robustness metrics in a human-readable form
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Generating and storing artifacts on the disk
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Generating MLFlow logs
+^^^^^^^^^^^^^^^^^^^^^^
