@@ -63,14 +63,20 @@ against each image that is correctly classified by model in the provided ``x_tes
 raw results, for example through the mapping between ``l0_dists_succ`` and a list of all L0 norms
 of all successful adversarial perturbations.
 
+.. _review_robustness_metrics:
+
 Review the robustness metrics
 -----------------------------
+
 While ``robustness_metrics`` contains all relevant metrics of the robustness check, we provide
 friendlier ways to review these.
 
 There are various ways to interact with the robustness metrics that ``run_robustness_check()``
 produce. You can print them in a human-readable form, generate and store artifacts containing
 metrics and various plots on the disk, or generate MLFlow logs containing metrics and artifacts.
+
+**Note**: Check the :ref:`robustness metrics page <robustness_metrics>` to understand which metrics we compute
+and how to interpret them.
 
 Printing robustness metrics in a human-readable form
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -117,6 +123,7 @@ This will produce the following artifacts at the path ``path_to_output``:
 * ``queries_histogram.png`` - a histogram of the query counts needed for successful adversarial perturbations
 * ``robustness_stats.json`` - a JSON file containing both the relevant robustness metrics and the raw results
   (non-aggregated lists of query counts and perturbation norms).
+
 Generating MLFlow logs
 ^^^^^^^^^^^^^^^^^^^^^^
 Finally, you can use MLFlow to generate logs for the robustness check. These will contain all metrics and artifacts
