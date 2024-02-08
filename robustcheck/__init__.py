@@ -2,4 +2,4 @@ from robustcheck.EvoStrategyUniformUntargeted.EvoStrategyUniformUntargeted impor
 from .RobustnessCheck import *
 from robustcheck.EpsilonGreedyUntargeted.EpsilonGreedyUntargeted import *
 
-__version__ = "1.0.8"
+__version__ = "1.0.10"
