@@ -7,7 +7,7 @@ RobustnessCheck is a Python package designed for evaluating the robustness of im
 models. It provides tooling to apply simple, yet effective and efficient black-box untargeted adversarial attacks 
 against models that expose a batch predict function that outputs probability distributions. 
 
-This tool is essential for researchers and practitioners who wish to assess the resilience of their models to 
+This tool is relevant to researchers and practitioners who wish to assess the resilience of their models to 
 adversarial perturbations or their robustness in a more general way.
 
 The black-box, untargeted adversarial attacks used for robustness assessment are **EvoBA**, which is a peer-reviewed
