@@ -4,7 +4,7 @@ from robustcheck.types.UntargetedAttack import UntargetedAttack
 
 
 class EpsilonGreedyUntargeted(UntargetedAttack):
-    """Black-box, untargeted adversarial attack against image classifiers.
+    """ Black-box, untargeted adversarial attack against image classifiers.
 
     It encapsulates the target model and image and provides a method to run the adversarial attack. The attack
     samples groups of pixels to adversarially perturb according to a classic epsilon-greedy strategy. The reward

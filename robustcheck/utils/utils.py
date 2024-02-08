@@ -42,7 +42,7 @@ def save_robustness_stats_artifacts(robustness_check, run_output_folder):
     Saves robustness check artifacts containings metrics and histograms of queries and perturbartion distances on the
     local file system.
 
-    Attributes:
+    Arguments:
         robustness_check: RobustnessCheck containing the model and dataset to be benchmarked. This requires its
             run_robustness_check() method to have been executed such that we have metrics to extract from it.
         run_output_folder: A string representing where to save the arising artifacts.
