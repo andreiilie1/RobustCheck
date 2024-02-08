@@ -3,10 +3,11 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to RobustCheck's documentation!
-=======================================
+RobustCheck documentation
+=========================
 
 .. image:: ../../assets/RobustnessCheck-logo2.png
+   :height: 400px
 
 RobustnessCheck is a Python package designed for evaluating the robustness of image
 classification machine learning models. It provides tooling to apply simple, yet effective
