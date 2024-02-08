@@ -5,32 +5,61 @@
 
 Welcome to RobustCheck's documentation!
 =======================================
+
+.. image:: ../../assets/RobustnessCheck-logo2.png
+
 RobustnessCheck is a Python package designed for evaluating the robustness of image
 classification machine learning models. It provides tooling to apply simple, yet effective
 and efficient black-box untargeted adversarial attacks against models that expose a batch
 predict function that outputs probability distributions.
 
-This tool is essential for researchers and practitioners who wish to assess the
-resilience of their models to adversarial perturbations or their robustness in a
-more general way.
+* Check out the :doc:`usage` section for getting started, including how to
+  :ref:`install <installation>` the package.
+
+* :doc:`metrics` introduces the main robustness metrics that RobustCheck generates.
+
+* :doc:`RobustnessCheck` provides the documentation for the main functionality of our
+  package.
+
+* :doc:`dump_metrics` provides the documentation for the functions used to save the
+  robustness assessment results.
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Main content:
+
+   usage
+   metrics
+   RobustnessCheck
+   dump_metrics
 
 The black-box, untargeted adversarial attacks used for robustness assessment are EvoBA,
 which is a peer-reviewed and published approach [1], and EpsGreedy, which is a variation of
 EvoBA following the classic Epsilon-Greedy exploration strategy.
 
-Check out the :doc:`usage` section for further information, including how to
-:ref:`install <installation>` the project.
+We provide the documentation for the underlying adversarial attacks that RobustCheck uses to
+generate the robustness metrics.
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
+   :caption: Adversarial attacks documentation:
 
-   usage
-   metrics
-   RobustnessCheck
    EvoStrategyUniformUntargeted
+   EpsilonGreedyUntargeted
+   UntargetedAttack
    EvoStrategy
 
+``EvoStrategyUniformUntargeted`` and ``EpsilonGreedyUntargeted`` are the adversarial attacks
+used by RobustCheck. We provide an abstract class ``UntargetedAttack`` that both of the attacks
+implement. Developers interested to extend RobustCheck via the addition of other relevant
+adversarial attacks are encouraged to do it by providing new implementations of
+``UntargetedAttack``.
+
+We further provide ``EvoStrategy``, a generic abstract class for evolutionary search strategies.
+``EvoStrategyUniformUntargeted`` implements both this and ``UntargetedAttack``. We believe that
+there are many other evolutionary strategies that would fulfill the efficiency and effectiveness
+criteria required by the RobustCheck package, therefore we encourage potential contributors to
+consider adding attacks that implement both ``EvoStrategy`` and ``UntargetedAttack``.
 
 
 Indices and tables
