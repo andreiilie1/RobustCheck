@@ -10,8 +10,3 @@ RobustnessCheck API
 .. autoclass:: RobustnessCheck
    :members:
 
-This is the main class to <stuff>
-
-Use the method below to run it:
-
-.. automethod:: RobustnessCheck.run_robustness_check
