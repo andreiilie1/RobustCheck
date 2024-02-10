@@ -99,13 +99,29 @@ rc.print_robustness_stats()
 ```
 
 This will produce an output that looks like
-**TODO add sample output after refactoring**
+```
+EvoBA STATS (L0 attack)
+___________________
+Perturbed successfully 698/698 images
+Average query count: 204.76790830945558
+Average l0 distance: 20.240687679083095
+Average l2 distance per pixel: 0.000610999622688751
 
+Median query count: 151.0
+Median l0 dist: 15.0
+
+Max query count: 1831
+Max l0 dist: 181
+___________________
+```
 ### Step 6: Interpret Results
- **TODO add what metrics mean, how to compare multiple models head-to-head, etc**
+Check our <a href="https://andreiilie1.github.io/RobustCheck/metrics.html"> documentation </a> for a comprehensive
+description of the results. 
 
 ## Contributing
-Contributions to RobustnessCheck are welcome. Please read our contributing guidelines (TODO: assemble these) before submitting a pull request.
+Contributions to RobustnessCheck are welcome. Please read our 
+<a href="https://github.com/andreiilie1/RobustCheck/blob/master/CONTRIBUTING.md"> contributing guidelines </a> before 
+submitting a pull request.
 
 ## License
 RobustnessCheck is licensed under MIT License.
