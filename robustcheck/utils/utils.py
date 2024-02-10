@@ -20,7 +20,7 @@ class NpEncoder(json.JSONEncoder):
 
 def save_histogram(values, fname, title, x_label="", y_label="", clf=True, fig_size=(20, 14), font_size=24):
     fig = plt.figure(figsize=fig_size)
-    plt.title(title)
+    plt.title(title, fontdict={"size": font_size})
 
     plt.xlabel(x_label, fontsize=font_size)
     plt.ylabel(y_label, fontsize=font_size)
