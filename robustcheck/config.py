@@ -1,11 +1,13 @@
 from robustcheck.types.AttackType import AttackType
 from robustcheck.EvoStrategyUniformUntargeted import EvoStrategyUniformUntargeted
 from robustcheck.EpsilonGreedyUntargeted import EpsilonGreedyUntargeted
+from robustcheck.SimBA import SimBA
 
 
 SUPPORTED_ATTACKS = {
     AttackType.EVOBA: EvoStrategyUniformUntargeted,
     AttackType.EPSGREEDY: EpsilonGreedyUntargeted,
+    AttackType.SIMBA: SimBA
 }
 
 DEFAULT_PARAMS = {
@@ -20,4 +22,9 @@ DEFAULT_PARAMS = {
             "epsilon": 0.1,
             "steps": 1000,
         },
+    AttackType.SIMBA:
+        {
+            "epsilon": 0.1,
+            "steps": 100,
+        }
 }
