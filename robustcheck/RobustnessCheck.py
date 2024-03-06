@@ -176,6 +176,7 @@ class RobustnessCheck:
             "indices_succ": successful_perturbation_indices,
             "count_fail": int(failed_perturbation_count),
             "indices_fail": failed_perturbation_indices,
+            "adversarial_accuracy": int(failed_perturbation_count) / len(self.x_test),
             "queries_succ_mean": np.mean(successful_perturbation_queries),
             "l0_dists_succ_mean": np.mean(successful_perturbation_l0_distances),
             "l2_dists_succ_mean": np.mean(successful_perturbation_l2_distances)
@@ -216,6 +217,8 @@ class RobustnessCheck:
         count_fail = self._stats["count_fail"]
         count_total = count_succ + count_fail
 
+        adversarial_accuracy = self._stats["adversarial_accuracy"]
+
         queries_succ_mean = self._stats["queries_succ_mean"]
         l0_dists_succ_mean = self._stats["l0_dists_succ_mean"]
 
@@ -229,6 +232,9 @@ class RobustnessCheck:
         print(PRINT_SEPARATOR)
 
         print(f"Perturbed successfully {count_succ}/{count_total} images")
+        print(f"Adversarial accuracy: {adversarial_accuracy * 100} %")
+
+        print()
         print(f"Average query count: {queries_succ_mean}")
         print(f"Average l0 distance: {l0_dists_succ_mean}")
         print(f"Average l2 distance per pixel: {l2_dists_succ_mean_pp}")
