@@ -88,7 +88,8 @@ class SimBA(UntargetedAttack):
                 self._perturbed_img = candidate_plus_perturbed_img
             else:
                 candidate_minus_perturbed_img = self._perturbed_img.copy()
-                candidate_minus_perturbed_img[sampled_pixel_x][sampled_pixel_y][0] -= self.epsilon * self.pixel_space_max
+                candidate_minus_perturbed_img[sampled_pixel_x][sampled_pixel_y][0] -= \
+                    self.epsilon * self.pixel_space_max
                 candidate_minus_perturbed_img[sampled_pixel_x][sampled_pixel_y][0] = max(
                     candidate_minus_perturbed_img[sampled_pixel_x][sampled_pixel_y][0], self.pixel_space_min
                 )

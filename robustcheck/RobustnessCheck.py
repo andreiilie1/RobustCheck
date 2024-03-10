@@ -228,7 +228,7 @@ class RobustnessCheck:
         l2_dists_succ_mean_pp = self._stats["l2_dists_succ_mean_pp"]
 
         print()
-        print("EvoBA STATS (L0 attack)")
+        print(f"Robustness statistics - using {self.attack}")
         print(PRINT_SEPARATOR)
 
         print(f"Perturbed successfully {count_succ}/{count_total} images")
