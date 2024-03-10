@@ -12,7 +12,7 @@ setup(
     packages=find_packages(),
     description="Tool for quick assessment of image classifiers robustness",
     url="https://github.com/andreiilie1/RobustCheck",
-    download_url="https://github.com/andreiilie1/RobustCheck/archive/refs/tags/v1.0.10.tar.gz",
+    download_url="https://github.com/andreiilie1/RobustCheck/archive/refs/tags/v1.1.0.tar.gz",
     author="Andrei Ilie",
     author_email="andrei0758@gmail.com",
     include_package_data=True,

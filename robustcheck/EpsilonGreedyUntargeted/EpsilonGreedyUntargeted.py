@@ -34,7 +34,19 @@ class EpsilonGreedyUntargeted(UntargetedAttack):
             successful adversarial perturbation was found or until steps generations were explored. Returns the total
             number of generations before the stopping condition was reached.
     """
-    def __init__(self, model, img, label, pixel_groups, epsilon=0.1, pixel_space_max=1.0, steps=1000, verbose=False):
+    def __init__(
+            self,
+            model,
+            img,
+            label,
+            pixel_groups,
+            epsilon=0.1,
+            pixel_space_int_flag=True,
+            pixel_space_min=0,
+            pixel_space_max=255,
+            steps=1000,
+            verbose=False
+    ):
         UntargetedAttack.__init__(self, model, img, label)  # Each instance encapsulates the model and image to perturb
 
         self._perturbed_img = np.copy(img)  # self._perturbed_img is the variable we will iteratively perturb
@@ -46,7 +58,11 @@ class EpsilonGreedyUntargeted(UntargetedAttack):
 
         assert 0 <= epsilon <= 1  # epsilon is a probability (of exploration), needs to be between 0 and 1
         self.epsilon = epsilon
+
+        self.pixel_space_int_flag = pixel_space_int_flag
+        self.pixel_space_min = pixel_space_min
         self.pixel_space_max = pixel_space_max
+
         self.steps = steps
 
         self.verbose = verbose
@@ -121,7 +137,11 @@ class EpsilonGreedyUntargeted(UntargetedAttack):
         candidate_next_perturbed_img = self._perturbed_img.copy()
 
         for ch in range(np.shape(self.img)[2]):
-            value = random.randint(0, 255)
+            value = (
+                random.randint(int(self.pixel_space_min), int(self.pixel_space_max))
+                if self.pixel_space_int_flag
+                else random.uniform(self.pixel_space_min, self.pixel_space_max)
+            )
             candidate_next_perturbed_img[attack_pixel[0]][attack_pixel[1]][ch] = value
 
         correct_class_prob_before = self._model_perturbed_prediction[self.label]
