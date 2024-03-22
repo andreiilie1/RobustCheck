@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>robustcheck.EpsilonGreedyUntargeted.EpsilonGreedyUntargeted &#8212; RobustCheck  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for robustcheck.EpsilonGreedyUntargeted.EpsilonGreedyUntargeted</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">robustcheck.types.UntargetedAttack</span> <span class="kn">import</span> <span class="n">UntargetedAttack</span>
+
+
+<div class="viewcode-block" id="EpsilonGreedyUntargeted">
+<a class="viewcode-back" href="../../../EpsilonGreedyUntargeted.html#robustcheck.EpsilonGreedyUntargeted.EpsilonGreedyUntargeted">[docs]</a>
+<span class="k">class</span> <span class="nc">EpsilonGreedyUntargeted</span><span class="p">(</span><span class="n">UntargetedAttack</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Black-box, untargeted adversarial attack against image classifiers.</span>
+
+<span class="sd">    It encapsulates the target model and image and provides a method to run the adversarial attack. The attack</span>
+<span class="sd">    samples groups of pixels to adversarially perturb according to a classic epsilon-greedy strategy. The reward</span>
+<span class="sd">    is represented by the decrease in the probability to be classified correctly of the target image by the target</span>
+<span class="sd">    model. The attack samples a pixel from the group that provided the highest average reward so far with</span>
+<span class="sd">    probability 1-epsilon, and a pixel from a random group with probability epsilon.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        model: Target model to be attacked. This has to expose a predict method that returns the</span>
+<span class="sd">            output probability distributions when provided a batch of images as input.</span>
+<span class="sd">        img: An array (HxWxC) representing the target image to be perturbed.</span>
+<span class="sd">        label: An integer representing the correct class index of the image.</span>
+<span class="sd">        pixel_groups: An array of arrays of pairs of integers. Each second level array represents the indices of pixels</span>
+<span class="sd">            that get attacked as part of the same pixel group. Usual approaches are to have these groups created based</span>
+<span class="sd">            on objectness or on spatial proximity (e.g. in a grid-like setup).</span>
+<span class="sd">        epsilon: A float representing the probability of exploration (choosing a random group of pixels to be perturbed)</span>
+<span class="sd">            in the classic epsilon-greedy strategy.</span>
+<span class="sd">        pixel_space_max: A number (integer or float) representing the maximum value pixels can take in the image space.</span>
+<span class="sd">            This is used for extracting normalised metrics about the attack success later on.</span>
+<span class="sd">        verbose: A boolean flag which, when set to True, enables printing info on the attack results.</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        get_best_candidate(self): Returns the fittest individual in the active generation.</span>
+<span class="sd">        is_perturbed(self): Returns a boolean representing whether a successful adversarial perturbation has been</span>
+<span class="sd">            achieved in the active generation.</span>
+<span class="sd">        run_adversarial_attack(self, steps=100): Runs the adversarial attack based on the evolutionary strategy until a</span>
+<span class="sd">            successful adversarial perturbation was found or until steps generations were explored. Returns the total</span>
+<span class="sd">            number of generations before the stopping condition was reached.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">model</span><span class="p">,</span>
+            <span class="n">img</span><span class="p">,</span>
+            <span class="n">label</span><span class="p">,</span>
+            <span class="n">pixel_groups</span><span class="p">,</span>
+            <span class="n">epsilon</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+            <span class="n">pixel_space_int_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">pixel_space_min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">pixel_space_max</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+            <span class="n">steps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">):</span>
+        <span class="n">UntargetedAttack</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>  <span class="c1"># Each instance encapsulates the model and image to perturb</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_perturbed_img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>  <span class="c1"># self._perturbed_img is the variable we will iteratively perturb</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model_perturbed_prediction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_perturbed_img</span><span class="p">]))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queries</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixel_groups</span> <span class="o">=</span> <span class="n">pixel_groups</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">number_groups</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_groups</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">epsilon</span> <span class="o">&lt;=</span> <span class="mi">1</span>  <span class="c1"># epsilon is a probability (of exploration), needs to be between 0 and 1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span> <span class="o">=</span> <span class="n">epsilon</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixel_space_int_flag</span> <span class="o">=</span> <span class="n">pixel_space_int_flag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixel_space_min</span> <span class="o">=</span> <span class="n">pixel_space_min</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixel_space_max</span> <span class="o">=</span> <span class="n">pixel_space_max</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">=</span> <span class="n">steps</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+        <span class="c1"># self._values contains the historical average rewards per pixel group</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_groups</span><span class="p">)]</span>
+
+        <span class="c1"># self._counts contains the historical count of explorations per pixel group</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_counts</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_groups</span><span class="p">)]</span>
+
+<div class="viewcode-block" id="EpsilonGreedyUntargeted.select_group">
+<a class="viewcode-back" href="../../../EpsilonGreedyUntargeted.html#robustcheck.EpsilonGreedyUntargeted.EpsilonGreedyUntargeted.select_group">[docs]</a>
+    <span class="k">def</span> <span class="nf">select_group</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is the core method that trades off between exploration and exploitation, as expected in classic</span>
+<span class="sd">        epsilon-greedy strategies. Here, exploration is represented by sampling a random group of pixels, while</span>
+<span class="sd">        exploitation means selecting a group of pixels with the highest average reward observed so far.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="p">:</span>
+            <span class="c1"># Pick a pixel group with the highest historical reward with probability 1 - self.epsilon.</span>
+            <span class="n">max_reward_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="p">)))</span>
+            <span class="n">max_group_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">max_reward_indices</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">max_group_index</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Pick a random pixel group with probability self.epsilon.</span>
+            <span class="n">random_group_index</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_groups</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">random_group_index</span></div>
+
+
+<div class="viewcode-block" id="EpsilonGreedyUntargeted.update">
+<a class="viewcode-back" href="../../../EpsilonGreedyUntargeted.html#robustcheck.EpsilonGreedyUntargeted.EpsilonGreedyUntargeted.update">[docs]</a>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chosen_group</span><span class="p">,</span> <span class="n">reward</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates a pixel group chosen_group according to an observed reward. This will update the corresponding</span>
+<span class="sd">        group value and count of historical observation. This updates the instance fields _values and _counts.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            chosen_group: An integer representing the index of the pixel group that will get updated after a new reward</span>
+<span class="sd">                was observed.</span>
+<span class="sd">            reward: The reward used to update the pixel group value and count.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            A float representing the updated value of the historical average reward of the chosen group.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_counts</span><span class="p">[</span><span class="n">chosen_group</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_counts</span><span class="p">[</span><span class="n">chosen_group</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_counts</span><span class="p">[</span><span class="n">chosen_group</span><span class="p">]</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="p">[</span><span class="n">chosen_group</span><span class="p">]</span>
+
+        <span class="n">new_value</span> <span class="o">=</span> <span class="p">((</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n</span><span class="p">))</span> <span class="o">*</span> <span class="n">value</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n</span><span class="p">))</span> <span class="o">*</span> <span class="n">reward</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="p">[</span><span class="n">chosen_group</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_value</span>
+        <span class="k">return</span> <span class="n">new_value</span></div>
+
+
+<div class="viewcode-block" id="EpsilonGreedyUntargeted.explore_attack_group">
+<a class="viewcode-back" href="../../../EpsilonGreedyUntargeted.html#robustcheck.EpsilonGreedyUntargeted.EpsilonGreedyUntargeted.explore_attack_group">[docs]</a>
+    <span class="k">def</span> <span class="nf">explore_attack_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group_index</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Explores the potential reward obtained by sampling the attacked pixel from a fixed group.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            group_index: An integer representing the index of the pixel group that the method will attempt perturbing.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            A dictionary containing information about the perturbation attempt. The dictionary contains the following</span>
+<span class="sd">            fields:</span>
+<span class="sd">                &quot;potential_reward&quot;: A float representing the expected reward by perturbing the target group.</span>
+<span class="sd">                &quot;altered_image&quot;: A three-dimensional array representing the perturbed image after applying the</span>
+<span class="sd">                    group_index group perturbation.</span>
+<span class="sd">                &quot;prob_before&quot;: A float representing the probability of the perturbed image to be classified correctly</span>
+<span class="sd">                    by the target model before applying the group_index group perturbation.</span>
+<span class="sd">                &quot;prob_after&quot;: A float representing the probability of the perturbed image to be classified correctly</span>
+<span class="sd">                    by the target model after applying the group_index group perturbation.</span>
+<span class="sd">                &quot;pred_after&quot;: An array of floats representing the probability distribution of the perturbed image as</span>
+<span class="sd">                    output by the target model after applying the group_index group perturbation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">attack_group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_groups</span><span class="p">[</span><span class="n">group_index</span><span class="p">]</span>
+        <span class="n">count_pixels_group</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">attack_group</span><span class="p">)</span>
+        <span class="n">attack_pixel_index</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randrange</span><span class="p">(</span><span class="n">count_pixels_group</span><span class="p">)</span>
+        <span class="n">attack_pixel</span> <span class="o">=</span> <span class="n">attack_group</span><span class="p">[</span><span class="n">attack_pixel_index</span><span class="p">]</span>
+
+        <span class="n">candidate_next_perturbed_img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_perturbed_img</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">)[</span><span class="mi">2</span><span class="p">]):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_space_min</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_space_max</span><span class="p">))</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_space_int_flag</span>
+                <span class="k">else</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_space_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_space_max</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">candidate_next_perturbed_img</span><span class="p">[</span><span class="n">attack_pixel</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">attack_pixel</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="n">ch</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="n">correct_class_prob_before</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_perturbed_prediction</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">]</span>
+
+        <span class="n">pred_after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">candidate_next_perturbed_img</span><span class="p">]))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queries</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">correct_class_prob_after</span> <span class="o">=</span> <span class="n">pred_after</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">]</span>
+        <span class="n">potential_reward</span> <span class="o">=</span> <span class="n">correct_class_prob_before</span> <span class="o">-</span> <span class="n">correct_class_prob_after</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;potential_reward&quot;</span><span class="p">:</span> <span class="n">potential_reward</span><span class="p">,</span>
+            <span class="s2">&quot;altered_image&quot;</span><span class="p">:</span> <span class="n">candidate_next_perturbed_img</span><span class="p">,</span>
+            <span class="s2">&quot;prob_before&quot;</span><span class="p">:</span> <span class="n">correct_class_prob_before</span><span class="p">,</span>
+            <span class="s2">&quot;prob_after&quot;</span><span class="p">:</span> <span class="n">correct_class_prob_after</span><span class="p">,</span>
+            <span class="s2">&quot;pred_after&quot;</span><span class="p">:</span> <span class="n">pred_after</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="EpsilonGreedyUntargeted.run_adversarial_attack">
+<a class="viewcode-back" href="../../../EpsilonGreedyUntargeted.html#robustcheck.EpsilonGreedyUntargeted.EpsilonGreedyUntargeted.run_adversarial_attack">[docs]</a>
+    <span class="k">def</span> <span class="nf">run_adversarial_attack</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Runs the adversarial attack.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">             An integer representing the number of attack steps until either the attack was successful or the maximum</span>
+<span class="sd">             steps threshold was reached.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">trial_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">trial_index</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_perturbed</span><span class="p">():</span>
+            <span class="n">attack_group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_group</span><span class="p">()</span>  <span class="c1"># Select the target pixel group to perturb</span>
+
+            <span class="c1"># Simulate attacking the target pixel group and retrieve the potential reward</span>
+            <span class="n">attack_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explore_attack_group</span><span class="p">(</span><span class="n">attack_group</span><span class="p">)</span>
+
+            <span class="n">potential_reward</span> <span class="o">=</span> <span class="n">attack_result</span><span class="p">[</span><span class="s2">&quot;potential_reward&quot;</span><span class="p">]</span>
+            <span class="n">altered_image</span> <span class="o">=</span> <span class="n">attack_result</span><span class="p">[</span><span class="s2">&quot;altered_image&quot;</span><span class="p">]</span>
+
+            <span class="c1"># Only update the perturbed image self._perturbed_img if the potential reward is positive</span>
+            <span class="k">if</span> <span class="n">potential_reward</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_perturbed_img</span> <span class="o">=</span> <span class="n">altered_image</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_model_perturbed_prediction</span> <span class="o">=</span> <span class="n">attack_result</span><span class="p">[</span><span class="s2">&quot;pred_after&quot;</span><span class="p">]</span>
+
+            <span class="c1"># Update the average historical reward of the target pixel group no matter if the reward was positive or not</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">attack_group</span><span class="p">,</span> <span class="n">potential_reward</span><span class="p">)</span>
+
+            <span class="n">trial_index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_perturbed</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Image successfully perturbed in </span><span class="si">{</span><span class="n">trial_index</span><span class="si">}</span><span class="s2"> rounds&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_perturbed</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The attack did not succeed within </span><span class="si">{</span><span class="n">trial_index</span><span class="si">}</span><span class="s2"> rounds&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Correct label:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Predicted label:&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model_perturbed_prediction</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">trial_index</span></div>
+
+
+<div class="viewcode-block" id="EpsilonGreedyUntargeted.get_best_candidate">
+<a class="viewcode-back" href="../../../EpsilonGreedyUntargeted.html#robustcheck.EpsilonGreedyUntargeted.EpsilonGreedyUntargeted.get_best_candidate">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_best_candidate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_perturbed_img</span></div>
+
+
+<div class="viewcode-block" id="EpsilonGreedyUntargeted.is_perturbed">
+<a class="viewcode-back" href="../../../EpsilonGreedyUntargeted.html#robustcheck.EpsilonGreedyUntargeted.EpsilonGreedyUntargeted.is_perturbed">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_perturbed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            A boolean representing whether the adversarial attack has been successful</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pred_label</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model_perturbed_prediction</span><span class="p">)</span>
+        <span class="n">correct_output</span> <span class="o">=</span> <span class="p">(</span><span class="n">pred_label</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="n">correct_output</span></div>
+</div>
+
+
+    <span class="c1"># TODO: move to /attacks module together with EvoStrategyUniformUntargeted, keep only RobustnessCheck in main folder</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">RobustCheck</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Main content:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../metrics.html">Robustness metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../RobustnessCheck.html">RobustnessCheck API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dump_metrics.html">Dumping robustness check results</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Adversarial attacks documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../EvoStrategyUniformUntargeted.html">EvoStrategyUniformUntargeted</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../EpsilonGreedyUntargeted.html">EpsilonGreedyUntargeted</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../UntargetedAttack.html">UntargetedAttack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../EvoStrategy.html">EvoStrategy</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2023, Andrei Ilie.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

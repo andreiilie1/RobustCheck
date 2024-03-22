@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>RobustnessCheck API &#8212; RobustCheck  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Dumping robustness check results" href="dump_metrics.html" />
+    <link rel="prev" title="Robustness metrics" href="metrics.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-robustcheck">
+<span id="robustnesscheck-api"></span><h1>RobustnessCheck API<a class="headerlink" href="#module-robustcheck" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="robustcheck.RobustnessCheck">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robustcheck.</span></span><span class="sig-name descname"><span class="pre">RobustnessCheck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attack</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attack_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/robustcheck/RobustnessCheck.html#RobustnessCheck"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robustcheck.RobustnessCheck" title="Link to this definition">¶</a></dt>
+<dd><p>Main entrypoint to the package: used to run adversarial robustness benchmarks against image classifiers.</p>
+<p>It encapsulates the target model, a labelled dataset used for the robustness assessment, the attack to be used
+to run the robustness check, and the attack’s parameters. It provides a method to run the robustness check of the
+model against the dataset by using one of the black-box adversarial attacks we provide as part of the package.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="robustcheck.RobustnessCheck.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#robustcheck.RobustnessCheck.model" title="Link to this definition">¶</a></dt>
+<dd><p>Target model to be assessed from a robustness point of view. This has to expose a predict method that
+returns the output probability distributions when provided a batch of images as input.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="robustcheck.RobustnessCheck.x_test">
+<span class="sig-name descname"><span class="pre">x_test</span></span><a class="headerlink" href="#robustcheck.RobustnessCheck.x_test" title="Link to this definition">¶</a></dt>
+<dd><p>An array of images, each of them represented as an array (HxWxC). This represents the sample of images
+that will be used for running the robustness check.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="robustcheck.RobustnessCheck.y_test">
+<span class="sig-name descname"><span class="pre">y_test</span></span><a class="headerlink" href="#robustcheck.RobustnessCheck.y_test" title="Link to this definition">¶</a></dt>
+<dd><p>An array of integers representing the correct class indexes of the images in x_test.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="robustcheck.RobustnessCheck.attack">
+<span class="sig-name descname"><span class="pre">attack</span></span><a class="headerlink" href="#robustcheck.RobustnessCheck.attack" title="Link to this definition">¶</a></dt>
+<dd><p>A types.AttackType enum field specifying which attack to use to run the robustness check. Most common
+choice is AttackType.EVOBA.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="robustcheck.RobustnessCheck.attack_params">
+<span class="sig-name descname"><span class="pre">attack_params</span></span><a class="headerlink" href="#robustcheck.RobustnessCheck.attack_params" title="Link to this definition">¶</a></dt>
+<dd><p>A dictionary mapping parameters that the chosen attack expects and values. In case some mandatory
+attack parameters are not specified, these will be filled automatically according to default values that
+can be found in config.DEFAULT_PARAMS.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robustcheck.RobustnessCheck.run_robustness_check">
+<span class="sig-name descname"><span class="pre">run_robustness_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/robustcheck/RobustnessCheck.html#RobustnessCheck.run_robustness_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robustcheck.RobustnessCheck.run_robustness_check" title="Link to this definition">¶</a></dt>
+<dd><p>Runs the specified attack against the model for each image from x_test with
+corresponding label from y_test. Returns a dictionary containing the robustness stats.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robustcheck.RobustnessCheck.print_robustness_stats">
+<span class="sig-name descname"><span class="pre">print_robustness_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/robustcheck/RobustnessCheck.html#RobustnessCheck.print_robustness_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robustcheck.RobustnessCheck.print_robustness_stats" title="Link to this definition">¶</a></dt>
+<dd><p>Prints the robustness stats of the model against the input dataset in a
+human-readable format. This runs no computation per se, but just prints cached  robustness stats as produced
+by run_robustness_check(self). Therefore, it needs run_robustness_check(self) to have completed successfully
+before being called, otherwise it will raise an exception.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robustcheck.RobustnessCheck.get_stats">
+<span class="sig-name descname"><span class="pre">get_stats</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/robustcheck/RobustnessCheck.html#RobustnessCheck.get_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robustcheck.RobustnessCheck.get_stats" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary containing the statistics of the robustness check if it was run or raises an exception if not.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">print_robustness_stats</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/robustcheck/RobustnessCheck.html#RobustnessCheck.print_robustness_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<dd><p>Prints the robustness check statistics in a human-readable format.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">run_robustness_check</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/robustcheck/RobustnessCheck.html#RobustnessCheck.run_robustness_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition">¶</a></dt>
+<dd><p>Runs the robustness check of the model against the correctly classified images from x_test. Note there is no
+point in adversarially perturbing the images that are already misclassified.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary containing statistics about the robustness of the model. These are based on the success rates,
+adversarial distances and counts of queries required until successful perturbations of the underlying
+black-box adversarial attack that is used.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">RobustCheck</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Main content:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="metrics.html">Robustness metrics</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">RobustnessCheck API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#robustcheck.RobustnessCheck"><code class="docutils literal notranslate"><span class="pre">RobustnessCheck</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dump_metrics.html">Dumping robustness check results</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Adversarial attacks documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="EvoStrategyUniformUntargeted.html">EvoStrategyUniformUntargeted</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EpsilonGreedyUntargeted.html">EpsilonGreedyUntargeted</a></li>
+<li class="toctree-l1"><a class="reference internal" href="UntargetedAttack.html">UntargetedAttack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EvoStrategy.html">EvoStrategy</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="metrics.html" title="previous chapter">Robustness metrics</a></li>
+      <li>Next: <a href="dump_metrics.html" title="next chapter">Dumping robustness check results</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2023, Andrei Ilie.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/RobustnessCheck.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

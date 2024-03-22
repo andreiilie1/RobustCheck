@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>UntargetedAttack &#8212; RobustCheck  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="EvoStrategy" href="EvoStrategy.html" />
+    <link rel="prev" title="EpsilonGreedyUntargeted" href="EpsilonGreedyUntargeted.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="untargetedattack">
+<h1>UntargetedAttack<a class="headerlink" href="#untargetedattack" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="robustcheck.types.UntargetedAttack.UntargetedAttack">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robustcheck.types.UntargetedAttack.</span></span><span class="sig-name descname"><span class="pre">UntargetedAttack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/robustcheck/types/UntargetedAttack.html#UntargetedAttack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robustcheck.types.UntargetedAttack.UntargetedAttack" title="Link to this definition">¶</a></dt>
+<dd><p>Abstract class for untargeted adversarial attacks</p>
+<p>This is an abstract class that provides a template for standard untargeted adversarial attacks.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="robustcheck.types.UntargetedAttack.UntargetedAttack.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#robustcheck.types.UntargetedAttack.UntargetedAttack.model" title="Link to this definition">¶</a></dt>
+<dd><p>Target model to be attacked. This has to expose a predict method that returns the
+output probability distributions when provided a batch of images as input.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="robustcheck.types.UntargetedAttack.UntargetedAttack.img">
+<span class="sig-name descname"><span class="pre">img</span></span><a class="headerlink" href="#robustcheck.types.UntargetedAttack.UntargetedAttack.img" title="Link to this definition">¶</a></dt>
+<dd><p>An array (HxWxC) representing the target image to be perturbed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="robustcheck.types.UntargetedAttack.UntargetedAttack.label">
+<span class="sig-name descname"><span class="pre">label</span></span><a class="headerlink" href="#robustcheck.types.UntargetedAttack.UntargetedAttack.label" title="Link to this definition">¶</a></dt>
+<dd><p>An integer representing the correct class index of the image.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robustcheck.types.UntargetedAttack.UntargetedAttack.run_adversarial_attack">
+<span class="sig-name descname"><span class="pre">run_adversarial_attack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/robustcheck/types/UntargetedAttack.html#UntargetedAttack.run_adversarial_attack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robustcheck.types.UntargetedAttack.UntargetedAttack.run_adversarial_attack" title="Link to this definition">¶</a></dt>
+<dd><p>Abstract method, its implementation will run the adversarial attack.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robustcheck.types.UntargetedAttack.UntargetedAttack.is_perturbed">
+<span class="sig-name descname"><span class="pre">is_perturbed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/robustcheck/types/UntargetedAttack.html#UntargetedAttack.is_perturbed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robustcheck.types.UntargetedAttack.UntargetedAttack.is_perturbed" title="Link to this definition">¶</a></dt>
+<dd><p>Abstract method, its method will return a boolean indicating whether a successful
+untargeted adversarial perturbation was found.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_perturbed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/robustcheck/types/UntargetedAttack.html#UntargetedAttack.is_perturbed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<dd><p>The implementation of this method will return whether the adversarial attack has been successful</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id1">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">run_adversarial_attack</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/robustcheck/types/UntargetedAttack.html#UntargetedAttack.run_adversarial_attack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition">¶</a></dt>
+<dd><p>The implementation of this method will run the actual adversarial attack</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">RobustCheck</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Main content:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="metrics.html">Robustness metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RobustnessCheck.html">RobustnessCheck API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dump_metrics.html">Dumping robustness check results</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Adversarial attacks documentation:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="EvoStrategyUniformUntargeted.html">EvoStrategyUniformUntargeted</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EpsilonGreedyUntargeted.html">EpsilonGreedyUntargeted</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">UntargetedAttack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EvoStrategy.html">EvoStrategy</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="EpsilonGreedyUntargeted.html" title="previous chapter">EpsilonGreedyUntargeted</a></li>
+      <li>Next: <a href="EvoStrategy.html" title="next chapter">EvoStrategy</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2023, Andrei Ilie.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/UntargetedAttack.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>robustcheck.RobustnessCheck &#8212; RobustCheck  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for robustcheck.RobustnessCheck</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">robustcheck</span> <span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">robustcheck.utils</span> <span class="kn">import</span> <span class="n">PRINT_SEPARATOR</span>
+<span class="kn">from</span> <span class="nn">robustcheck.utils.metrics</span> <span class="kn">import</span> <span class="n">image_distance</span>
+
+
+<div class="viewcode-block" id="RobustnessCheck">
+<a class="viewcode-back" href="../../RobustnessCheck.html#robustcheck.RobustnessCheck">[docs]</a>
+<span class="k">class</span> <span class="nc">RobustnessCheck</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Main entrypoint to the package: used to run adversarial robustness benchmarks against image classifiers.</span>
+
+<span class="sd">    It encapsulates the target model, a labelled dataset used for the robustness assessment, the attack to be used</span>
+<span class="sd">    to run the robustness check, and the attack&#39;s parameters. It provides a method to run the robustness check of the</span>
+<span class="sd">    model against the dataset by using one of the black-box adversarial attacks we provide as part of the package.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        model: Target model to be assessed from a robustness point of view. This has to expose a predict method that</span>
+<span class="sd">            returns the output probability distributions when provided a batch of images as input.</span>
+<span class="sd">        x_test: An array of images, each of them represented as an array (HxWxC). This represents the sample of images</span>
+<span class="sd">            that will be used for running the robustness check.</span>
+<span class="sd">        y_test: An array of integers representing the correct class indexes of the images in x_test.</span>
+<span class="sd">        attack: A types.AttackType enum field specifying which attack to use to run the robustness check. Most common</span>
+<span class="sd">            choice is AttackType.EVOBA.</span>
+<span class="sd">        attack_params: A dictionary mapping parameters that the chosen attack expects and values. In case some mandatory</span>
+<span class="sd">            attack parameters are not specified, these will be filled automatically according to default values that</span>
+<span class="sd">            can be found in config.DEFAULT_PARAMS.</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        run_robustness_check(self): Runs the specified attack against the model for each image from x_test with</span>
+<span class="sd">            corresponding label from y_test. Returns a dictionary containing the robustness stats.</span>
+<span class="sd">        print_robustness_stats(self): Prints the robustness stats of the model against the input dataset in a</span>
+<span class="sd">            human-readable format. This runs no computation per se, but just prints cached  robustness stats as produced</span>
+<span class="sd">            by run_robustness_check(self). Therefore, it needs run_robustness_check(self) to have completed successfully</span>
+<span class="sd">            before being called, otherwise it will raise an exception.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">attack</span><span class="p">,</span> <span class="n">attack_params</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_test</span> <span class="o">=</span> <span class="n">x_test</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_test</span> <span class="o">=</span> <span class="n">y_test</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_test</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y_test</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Lengths of x_test and y_test do not match: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_test</span><span class="p">)</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y_test</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataset_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">attack</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">SUPPORTED_ATTACKS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attack</span><span class="si">}</span><span class="s2"> is not one of the supported backend types: </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">SUPPORTED_ATTACKS</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">attack</span> <span class="o">=</span> <span class="n">attack</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attack_params</span> <span class="o">=</span> <span class="n">attack_params</span>
+
+        <span class="k">for</span> <span class="n">attack_param_key</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">DEFAULT_PARAMS</span><span class="p">[</span><span class="n">attack</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">attack_param_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attack_params</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">attack_params</span><span class="p">[</span><span class="n">attack_param_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">DEFAULT_PARAMS</span><span class="p">[</span><span class="n">attack</span><span class="p">][</span>
+                    <span class="n">attack_param_key</span>
+                <span class="p">]</span>
+
+        <span class="c1"># TODO: check if attack_params are the ones corresponding to the attack. Map these in robustcheck.config</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running accuracy evaluation&quot;</span><span class="p">)</span>
+
+        <span class="n">proba_outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_y_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">proba_outputs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_correct_pred_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_pred</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_test</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_accuracy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_correct_pred_mask</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Accuracy: &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accuracy</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_index_to_adversarial_strategy</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="RobustnessCheck.run_robustness_check">
+<a class="viewcode-back" href="../../RobustnessCheck.html#robustcheck.RobustnessCheck.run_robustness_check">[docs]</a>
+    <span class="k">def</span> <span class="nf">run_robustness_check</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Runs the robustness check of the model against the correctly classified images from x_test. Note there is no</span>
+<span class="sd">        point in adversarially perturbing the images that are already misclassified.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dictionary containing statistics about the robustness of the model. These are based on the success rates,</span>
+<span class="sd">            adversarial distances and counts of queries required until successful perturbations of the underlying</span>
+<span class="sd">            black-box adversarial attack that is used.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">attack_class</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">SUPPORTED_ATTACKS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">attack</span><span class="p">]</span>
+        <span class="n">index_to_adversarial_strategy</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataset_size</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_correct_pred_mask</span><span class="p">[</span><span class="n">index</span><span class="p">]:</span>
+                <span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_test</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_test</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+                <span class="n">index_to_adversarial_strategy</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">attack_class</span><span class="p">(</span>
+                    <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                    <span class="n">img</span><span class="o">=</span><span class="n">img</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
+                    <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">attack_params</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="n">no_steps</span> <span class="o">=</span> <span class="n">index_to_adversarial_strategy</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">run_adversarial_attack</span><span class="p">()</span>
+
+                <span class="k">assert</span> <span class="p">(</span>
+                    <span class="n">no_steps</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="p">)</span>  <span class="c1"># This should hold as any correctly classified image requires at least one query</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_index_to_adversarial_strategy</span> <span class="o">=</span> <span class="n">index_to_adversarial_strategy</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_robustness_stats</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span> <span class="o">=</span> <span class="n">stats</span>
+
+        <span class="k">return</span> <span class="n">stats</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_compute_robustness_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index_to_adversarial_strategy</span> <span class="o">==</span> <span class="p">{}:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;There is no adversarial strategy dictionary computed as part of this instance&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">successful_perturbation_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">successful_perturbation_queries</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">successful_perturbation_l0_distances</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">successful_perturbation_l2_distances</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">successful_perturbation_indices</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">failed_perturbation_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">failed_perturbation_indices</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">adv_evo_strategy_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_adversarial_strategy_indices</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">adv_evo_strategy_indices</span><span class="p">:</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index_to_adversarial_strategy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">img</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index_to_adversarial_strategy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">is_perturbed</span><span class="p">():</span>
+                <span class="n">successful_perturbation_count</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">successful_perturbation_queries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_index_to_adversarial_strategy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">queries</span>
+                <span class="p">)</span>
+
+                <span class="n">curr_l0</span> <span class="o">=</span> <span class="n">image_distance</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_index_to_adversarial_strategy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get_best_candidate</span><span class="p">(),</span>
+                    <span class="n">img</span><span class="p">,</span>
+                    <span class="n">norm</span><span class="o">=</span><span class="s2">&quot;L0&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">successful_perturbation_l0_distances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">curr_l0</span><span class="p">)</span>
+
+                <span class="n">curr_l2</span> <span class="o">=</span> <span class="n">image_distance</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_index_to_adversarial_strategy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get_best_candidate</span><span class="p">(),</span>
+                    <span class="n">img</span><span class="p">,</span>
+                    <span class="n">norm</span><span class="o">=</span><span class="s2">&quot;L2&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">successful_perturbation_l2_distances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">curr_l2</span><span class="p">)</span>
+
+                <span class="n">successful_perturbation_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">failed_perturbation_count</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">failed_perturbation_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="n">img_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_index_to_adversarial_strategy</span><span class="p">[</span><span class="n">adv_evo_strategy_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">img</span>
+        <span class="p">)</span>
+        <span class="n">count_px</span> <span class="o">=</span> <span class="n">img_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">img_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">img_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="c1"># Will report l2 distances on [0,1] pixel scale, as this is usual in the literature</span>
+        <span class="c1"># e.g. ImageNet is on [0,255]. Note l0 doesn&#39;t need to be normalised, as it&#39;s a count</span>
+        <span class="n">img_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index_to_adversarial_strategy</span><span class="p">[</span>
+            <span class="n">adv_evo_strategy_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">pixel_space_max</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;count_succ&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">successful_perturbation_count</span><span class="p">),</span>
+            <span class="s2">&quot;queries_succ&quot;</span><span class="p">:</span> <span class="n">successful_perturbation_queries</span><span class="p">,</span>
+            <span class="s2">&quot;l0_dists_succ&quot;</span><span class="p">:</span> <span class="n">successful_perturbation_l0_distances</span><span class="p">,</span>
+            <span class="s2">&quot;l2_dists_succ&quot;</span><span class="p">:</span> <span class="n">successful_perturbation_l2_distances</span><span class="p">,</span>
+            <span class="s2">&quot;indices_succ&quot;</span><span class="p">:</span> <span class="n">successful_perturbation_indices</span><span class="p">,</span>
+            <span class="s2">&quot;count_fail&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">failed_perturbation_count</span><span class="p">),</span>
+            <span class="s2">&quot;indices_fail&quot;</span><span class="p">:</span> <span class="n">failed_perturbation_indices</span><span class="p">,</span>
+            <span class="s2">&quot;adversarial_accuracy&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">failed_perturbation_count</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_test</span><span class="p">),</span>
+            <span class="s2">&quot;queries_succ_mean&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">successful_perturbation_queries</span><span class="p">),</span>
+            <span class="s2">&quot;l0_dists_succ_mean&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">successful_perturbation_l0_distances</span><span class="p">),</span>
+            <span class="s2">&quot;l2_dists_succ_mean&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">successful_perturbation_l2_distances</span><span class="p">)</span>
+            <span class="o">/</span> <span class="n">img_scale</span><span class="p">,</span>
+            <span class="s2">&quot;l2_dists_succ_mean_pp&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">successful_perturbation_l2_distances</span><span class="p">)</span>
+            <span class="o">/</span> <span class="p">(</span><span class="n">count_px</span> <span class="o">*</span> <span class="n">img_scale</span><span class="p">),</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="RobustnessCheck.get_stats">
+<a class="viewcode-back" href="../../RobustnessCheck.html#robustcheck.RobustnessCheck.get_stats">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">             A dictionary containing the statistics of the robustness check if it was run or raises an exception if not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span> <span class="o">==</span> <span class="p">{}:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No stats have been computed as part of this instance&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">get_adversarial_strategy_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">adv_evo_strategy_indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index_to_adversarial_strategy</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">adv_evo_strategy_indices</span>
+
+    <span class="k">def</span> <span class="nf">get_adversarial_strategy_perturbed_flag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="n">adversarial_strategy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index_to_adversarial_strategy</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">adversarial_strategy</span><span class="o">.</span><span class="n">is_perturbed</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">get_adversarial_strategy_perturbed_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="n">adversarial_strategy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index_to_adversarial_strategy</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">adversarial_strategy</span><span class="o">.</span><span class="n">get_best_candidate</span><span class="p">()</span>
+
+<div class="viewcode-block" id="RobustnessCheck.print_robustness_stats">
+<a class="viewcode-back" href="../../RobustnessCheck.html#robustcheck.RobustnessCheck.print_robustness_stats">[docs]</a>
+    <span class="k">def</span> <span class="nf">print_robustness_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prints the robustness check statistics in a human-readable format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span> <span class="o">==</span> <span class="p">{}:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No stats have been computed as part of this instance&quot;</span><span class="p">)</span>
+
+        <span class="n">count_succ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="s2">&quot;count_succ&quot;</span><span class="p">]</span>
+        <span class="n">count_fail</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="s2">&quot;count_fail&quot;</span><span class="p">]</span>
+        <span class="n">count_total</span> <span class="o">=</span> <span class="n">count_succ</span> <span class="o">+</span> <span class="n">count_fail</span>
+
+        <span class="n">adversarial_accuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="s2">&quot;adversarial_accuracy&quot;</span><span class="p">]</span>
+
+        <span class="n">queries_succ_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="s2">&quot;queries_succ_mean&quot;</span><span class="p">]</span>
+        <span class="n">l0_dists_succ_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="s2">&quot;l0_dists_succ_mean&quot;</span><span class="p">]</span>
+
+        <span class="n">queries_succ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="s2">&quot;queries_succ&quot;</span><span class="p">]</span>
+        <span class="n">l0_dists_succ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="s2">&quot;l0_dists_succ&quot;</span><span class="p">]</span>
+
+        <span class="n">l2_dists_succ_mean_pp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stats</span><span class="p">[</span><span class="s2">&quot;l2_dists_succ_mean_pp&quot;</span><span class="p">]</span>
+
+        <span class="nb">print</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Robustness statistics - using </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">attack</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">PRINT_SEPARATOR</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Perturbed successfully </span><span class="si">{</span><span class="n">count_succ</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">count_total</span><span class="si">}</span><span class="s2"> images&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Adversarial accuracy: </span><span class="si">{</span><span class="n">adversarial_accuracy</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="si">}</span><span class="s2"> %&quot;</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average query count: </span><span class="si">{</span><span class="n">queries_succ_mean</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average l0 distance: </span><span class="si">{</span><span class="n">l0_dists_succ_mean</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average l2 distance per pixel: </span><span class="si">{</span><span class="n">l2_dists_succ_mean_pp</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Median query count: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">queries_succ</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Median l0 dist: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">l0_dists_succ</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Max query count: </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">queries_succ</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Max l0 dist: </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">l0_dists_succ</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">PRINT_SEPARATOR</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">RobustCheck</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Main content:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../metrics.html">Robustness metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../RobustnessCheck.html">RobustnessCheck API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dump_metrics.html">Dumping robustness check results</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Adversarial attacks documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../EvoStrategyUniformUntargeted.html">EvoStrategyUniformUntargeted</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../EpsilonGreedyUntargeted.html">EpsilonGreedyUntargeted</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UntargetedAttack.html">UntargetedAttack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../EvoStrategy.html">EvoStrategy</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2023, Andrei Ilie.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

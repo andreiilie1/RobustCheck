@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>RobustCheck documentation &#8212; RobustCheck  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Usage" href="usage.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="robustcheck-documentation">
+<h1>RobustCheck documentation<a class="headerlink" href="#robustcheck-documentation" title="Link to this heading">¶</a></h1>
+<a class="reference internal image-reference" href="_images/RobustnessCheck-logo2.png"><img alt="_images/RobustnessCheck-logo2.png" src="_images/RobustnessCheck-logo2.png" style="height: 400px;" /></a>
+<p>RobustnessCheck is a Python package designed for evaluating the robustness of image
+classification machine learning models. It provides tooling to apply simple, yet effective
+and efficient black-box untargeted adversarial attacks against models that expose a batch
+predict function that outputs probability distributions.</p>
+<ul class="simple">
+<li><p>Check out the <a class="reference internal" href="usage.html"><span class="doc">Usage</span></a> section for getting started, including how to
+<a class="reference internal" href="usage.html#installation"><span class="std std-ref">install</span></a> the package.</p></li>
+<li><p><a class="reference internal" href="metrics.html"><span class="doc">Robustness metrics</span></a> introduces the main robustness metrics that RobustCheck generates.</p></li>
+<li><p><a class="reference internal" href="RobustnessCheck.html"><span class="doc">RobustnessCheck API</span></a> provides the documentation for the main functionality of our
+package.</p></li>
+<li><p><a class="reference internal" href="dump_metrics.html"><span class="doc">Dumping robustness check results</span></a> provides the documentation for the functions used to save the
+robustness assessment results.</p></li>
+</ul>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Main content:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#data-and-model-preparation">Data and model preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#set-up-a-robustnesscheck-object">Set up a RobustnessCheck object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#run-the-robustness-check">Run the robustness check</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#review-the-robustness-metrics">Review the robustness metrics</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="metrics.html">Robustness metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RobustnessCheck.html">RobustnessCheck API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="RobustnessCheck.html#robustcheck.RobustnessCheck"><code class="docutils literal notranslate"><span class="pre">RobustnessCheck</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dump_metrics.html">Dumping robustness check results</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dump_metrics.html#robustcheck.utils.save_robustness_stats_artifacts"><code class="docutils literal notranslate"><span class="pre">save_robustness_stats_artifacts()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dump_metrics.html#robustcheck.utils.generate_mlflow_logs"><code class="docutils literal notranslate"><span class="pre">generate_mlflow_logs()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>The black-box, untargeted adversarial attacks used for robustness assessment are EvoBA,
+which is a peer-reviewed and published approach [1], and EpsGreedy, which is a variation of
+EvoBA following the classic Epsilon-Greedy exploration strategy.</p>
+<p>We provide the documentation for the underlying adversarial attacks that RobustCheck uses to
+generate the robustness metrics.</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Adversarial attacks documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="EvoStrategyUniformUntargeted.html">EvoStrategyUniformUntargeted</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EpsilonGreedyUntargeted.html">EpsilonGreedyUntargeted</a></li>
+<li class="toctree-l1"><a class="reference internal" href="UntargetedAttack.html">UntargetedAttack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EvoStrategy.html">EvoStrategy</a></li>
+</ul>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">EvoStrategyUniformUntargeted</span></code> and <code class="docutils literal notranslate"><span class="pre">EpsilonGreedyUntargeted</span></code> are the adversarial attacks
+used by RobustCheck. We provide an abstract class <code class="docutils literal notranslate"><span class="pre">UntargetedAttack</span></code> that both of the attacks
+implement. Developers interested to extend RobustCheck via the addition of other relevant
+adversarial attacks are encouraged to do it by providing new implementations of
+<code class="docutils literal notranslate"><span class="pre">UntargetedAttack</span></code>.</p>
+<p>We further provide <code class="docutils literal notranslate"><span class="pre">EvoStrategy</span></code>, a generic abstract class for evolutionary search strategies.
+<code class="docutils literal notranslate"><span class="pre">EvoStrategyUniformUntargeted</span></code> implements both this and <code class="docutils literal notranslate"><span class="pre">UntargetedAttack</span></code>. We believe that
+there are many other evolutionary strategies that would fulfill the efficiency and effectiveness
+criteria required by the RobustCheck package, therefore we encourage potential contributors to
+consider adding attacks that implement both <code class="docutils literal notranslate"><span class="pre">EvoStrategy</span></code> and <code class="docutils literal notranslate"><span class="pre">UntargetedAttack</span></code>.</p>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+<section id="bibliography">
+<h1>Bibliography<a class="headerlink" href="#bibliography" title="Link to this heading">¶</a></h1>
+<p>[1] Neural Information Processing: 28th International Conference, ICONIP 2021, Sanur,
+Bali, Indonesia, December 8–12, 2021, Proceedings, Part III</p>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">RobustCheck</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Main content:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="metrics.html">Robustness metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RobustnessCheck.html">RobustnessCheck API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dump_metrics.html">Dumping robustness check results</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Adversarial attacks documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="EvoStrategyUniformUntargeted.html">EvoStrategyUniformUntargeted</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EpsilonGreedyUntargeted.html">EpsilonGreedyUntargeted</a></li>
+<li class="toctree-l1"><a class="reference internal" href="UntargetedAttack.html">UntargetedAttack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EvoStrategy.html">EvoStrategy</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="usage.html" title="next chapter">Usage</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2023, Andrei Ilie.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

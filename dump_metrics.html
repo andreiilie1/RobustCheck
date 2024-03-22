@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Dumping robustness check results &#8212; RobustCheck  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="EvoStrategyUniformUntargeted" href="EvoStrategyUniformUntargeted.html" />
+    <link rel="prev" title="RobustnessCheck API" href="RobustnessCheck.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="dumping-robustness-check-results">
+<h1>Dumping robustness check results<a class="headerlink" href="#dumping-robustness-check-results" title="Link to this heading">¶</a></h1>
+<p>We provide two standard ways for dumping the robustness check results:</p>
+<dl class="py function" id="module-robustcheck.utils">
+<dt class="sig sig-object py" id="robustcheck.utils.save_robustness_stats_artifacts">
+<span class="sig-prename descclassname"><span class="pre">robustcheck.utils.</span></span><span class="sig-name descname"><span class="pre">save_robustness_stats_artifacts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robustness_check</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_output_folder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/robustcheck/utils/utils.html#save_robustness_stats_artifacts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robustcheck.utils.save_robustness_stats_artifacts" title="Link to this definition">¶</a></dt>
+<dd><p>Saves robustness check artifacts containings metrics and histograms of queries and perturbartion distances on the
+local file system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>robustness_check</strong> – RobustnessCheck containing the model and dataset to be benchmarked. This requires its
+run_robustness_check() method to have been executed such that we have metrics to extract from it.</p></li>
+<li><p><strong>run_output_folder</strong> – A string representing where to save the arising artifacts.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="robustcheck.utils.generate_mlflow_logs">
+<span class="sig-prename descclassname"><span class="pre">robustcheck.utils.</span></span><span class="sig-name descname"><span class="pre">generate_mlflow_logs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robustness_check</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">experiment_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tracking_uri</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mlruns'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/robustcheck/utils/utils.html#generate_mlflow_logs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#robustcheck.utils.generate_mlflow_logs" title="Link to this definition">¶</a></dt>
+<dd><p>Generates robustness check logs on mlflow.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>robustness_check</strong> – RobustnessCheck containing the model and dataset to be benchmarked. This requires its
+run_robustness_check() method to have been executed such that we have metrics to extract from it.</p></li>
+<li><p><strong>run_name</strong> – A string representing the run name under which the mlflow artifacts and metrics will be logged.</p></li>
+<li><p><strong>experiment_name</strong> – A string representing the experiment name under which the mlflow artifacts and metrics will be
+logged.</p></li>
+<li><p><strong>tracking_uri</strong> – A string representing the path where the mlflow artifacts and metrics will be stored.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">RobustCheck</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Main content:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="metrics.html">Robustness metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RobustnessCheck.html">RobustnessCheck API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Dumping robustness check results</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#robustcheck.utils.save_robustness_stats_artifacts"><code class="docutils literal notranslate"><span class="pre">save_robustness_stats_artifacts()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#robustcheck.utils.generate_mlflow_logs"><code class="docutils literal notranslate"><span class="pre">generate_mlflow_logs()</span></code></a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Adversarial attacks documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="EvoStrategyUniformUntargeted.html">EvoStrategyUniformUntargeted</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EpsilonGreedyUntargeted.html">EpsilonGreedyUntargeted</a></li>
+<li class="toctree-l1"><a class="reference internal" href="UntargetedAttack.html">UntargetedAttack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EvoStrategy.html">EvoStrategy</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="RobustnessCheck.html" title="previous chapter">RobustnessCheck API</a></li>
+      <li>Next: <a href="EvoStrategyUniformUntargeted.html" title="next chapter">EvoStrategyUniformUntargeted</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2023, Andrei Ilie.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/dump_metrics.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
