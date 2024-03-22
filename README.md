@@ -31,7 +31,12 @@ with existing machine learning workflows. Being a black-box adversarial attack, 
 variety of models, so not only with deep neural networks. 
 
 ## Installation
-To install RobustnessCheck, clone this repo and run the following command in the base folder:
+To install RobustnessCheck, run the following command:
+```
+pip install robustcheck
+```
+
+The alternative is to clone this repo and run the following command in the base folder:
 
 ```
 python -m pip install .
